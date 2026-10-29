@@ -1,0 +1,16 @@
+---
+interface Props {
+  name: 'start' | 'settings' | 'prompts' | 'team' | 'sources';
+}
+
+const paths = {
+  start: ['M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z', 'm16 8-3 5-5 3 3-5 5-3Z'],
+  settings: ['M4 6h3m4 0h9M4 12h9m4 0h3M4 18h3m4 0h9', 'M7 3v6m10 0v6m-10 0v6'],
+  prompts: ['M9 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3', 'M9 3h6v4H9zM8 12h8m-8 4h6'],
+  team: ['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87', 'M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm4-3.87a4 4 0 0 1 0 7.75'],
+  sources: ['M12 5v16M3 3h4a5 5 0 0 1 5 2 5 5 0 0 1 5-2h4v16h-4a5 5 0 0 0-5 2 5 5 0 0 0-5-2H3V3Z'],
+} satisfies Record<Props['name'], string[]>;
+---
+<svg class="section-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {paths[Astro.props.name].map(d => <path d={d} />)}
+</svg>
