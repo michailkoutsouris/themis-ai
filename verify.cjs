@@ -33,7 +33,7 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   assert.match(await page.title(), language === 'en' ? /Themis/ : /Θέμις/);
   assert.equal(await page.locator('html').getAttribute('lang'), language);
   assert.equal(await page.locator('.language-switch [aria-current=page]').getAttribute('lang'), language);
-  assert.equal(await page.locator('.brand-name').textContent(), language === 'en' ? 'Themis.' : 'Θέμις.');
+  assert.equal(await page.locator('.brand-name').textContent(), language === 'en' ? 'Themis' : 'Θέμις');
   if (language === 'en') {
     const untranslated = await page.evaluate(() => {
       const body = document.body.cloneNode(true);

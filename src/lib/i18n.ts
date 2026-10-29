@@ -2,8 +2,7 @@ export type Language = 'el' | 'en';
 
 const english = {
   "Μετάβαση στο περιεχόμενο": "Skip to content",
-  "Θέμις.": "Themis.",
-  "Νομική σκέψη, σε σειρά.": "Legal thinking, in order.",
+  "Νομική σκέψη, σε σειρά": "Legal thinking, in order",
   "Πώς ξεκινάς": "Getting started",
   "Μοντέλο & ρυθμίσεις": "Model & settings",
   "Τα prompts": "The prompts",
