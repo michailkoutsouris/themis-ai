@@ -1,0 +1,11 @@
+---
+interface Props { kind: 'expand' | 'collapse' | 'down' | 'up'; }
+const { kind } = Astro.props;
+const paths = {
+  expand: 'M12 9V3m-3 3 3-3 3 3M12 15v6m-3-3 3 3 3-3',
+  collapse: 'M12 3v6m-3-3 3 3 3-3M12 21v-6m-3 3 3-3 3 3',
+  down: 'm6 9 6 6 6-6',
+  up: 'm6 15 6-6 6 6',
+};
+---
+<svg class={`disclosure-icon icon-${kind}`} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d={paths[kind]} /></svg>

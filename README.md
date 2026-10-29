@@ -11,7 +11,7 @@ Themis provides four reusable prompts for working with ChatGPT: starting a case,
 - Four complete prompts in Greek and English, with accessible tabs and keyboard navigation.
 - An ΕΛ / EN switch for the whole interface, prompt text, and downloads; it also works without JavaScript.
 - Copy individual prompts, with clipboard and manual-selection fallbacks.
-- Download the complete prompt bundle or individual Markdown files.
+- Download a ZIP archive containing four separate Markdown prompt files.
 - Responsive layout and readable content with JavaScript disabled.
 - Self-contained HTML for offline reading after building.
 - No application accounts, API keys, analytics, cookies, or case-data storage.
@@ -20,7 +20,7 @@ The site is a prompt library. It does not run AI models or automatically send in
 
 ## Stack
 
-Astro renders the page and Markdown downloads at build time. Cloudflare Workers Static Assets serves the generated files. The site needs no SSR adapter, persistent server, database, or runtime secrets.
+Astro renders the page and creates the ZIP and Markdown downloads at build time. ZIP generation uses fflate only during the build. Cloudflare Workers Static Assets serves the generated files. The site needs no SSR adapter, persistent server, database, or runtime secrets.
 
 The wordmark and tagline share a horizontal navbar with a vertical divider. The hero fills the viewport below the navbar, with a 520px minimum and room to grow when its content needs more space.
 
@@ -43,7 +43,7 @@ Build the static site:
 npm run build
 ```
 
-The generated `dist/index.html` includes its styles, JavaScript, and prompt text, and can be opened directly in a browser. Markdown downloads are generated alongside it. Edit the source files rather than the generated `dist/` files.
+The generated `dist/index.html` includes its styles, JavaScript, and prompt text, and can be opened directly in a browser. ZIP archives and Markdown downloads are generated alongside it. Edit the source files rather than the generated `dist/` files.
 
 ## Project structure
 
@@ -57,13 +57,16 @@ src/
   lib/i18n.ts                   UI translations
   lib/hero-background.ts        Build-time background bundling
   scripts/pattern-waves.js       Adapted WebGL wave background
-  lib/prompts.ts                Prompt metadata and bundle generation
+  lib/prompts.ts                Prompt metadata and display order
+  lib/prompt-archive.ts          Build-time ZIP archive generation
   pages/index.astro             Greek page
   pages/en/index.astro          English page
   pages/en/prompts/[filename].ts English Markdown downloads
-  pages/en/themis-prompts.md.ts  English prompt bundle
+  pages/en/themis-prompts-en.zip.ts English ZIP archive
+  pages/en/themis-prompts.md.ts  Legacy English Markdown bundle
   pages/prompts/[filename].ts   Individual static Markdown downloads
-  pages/themis-prompts.md.ts    Combined static Markdown download
+  pages/themis-prompts.zip.ts   Greek ZIP archive
+  pages/themis-prompts.md.ts    Legacy combined Markdown download
 public/
   _headers                     Static response headers
   favicon.svg                  Cream and green Θ favicon
@@ -83,7 +86,7 @@ npm test
 npm run deploy:dry-run
 ```
 
-`npm test` builds both languages and runs Playwright against their generated HTML. It checks canonical prompt text, all tabs and copy actions, keyboard navigation, expand/collapse, Markdown downloads, clipboard fallbacks, content without JavaScript, safe external links, runtime errors, layouts at four viewport widths, complete English UI coverage, and language switching with and without JavaScript.
+`npm test` builds both languages and runs Playwright against their generated HTML. It checks canonical prompt text, all tabs and copy actions, keyboard navigation, expand/collapse icons, all four FAQ toggles, ZIP downloads and their canonical file contents, clipboard fallbacks, content without JavaScript, safe external links, runtime errors, layouts at four viewport widths, complete English UI coverage, and language switching with and without JavaScript.
 
 The effect checks verify rendered frames, off-screen pausing, reduced motion, page-cache cleanup, and usable controls when WebGL is unavailable.
 
@@ -128,7 +131,7 @@ Further reading: [Astro on Cloudflare Workers](https://developers.cloudflare.com
 
 Update the canonical Greek files in `src/content/prompts/` and their English counterparts in `src/content/prompts/en/`. UI translations live in `src/lib/i18n.ts`; both pages use `src/components/ThemisPage.astro`. Metadata, display order, and the bundle introduction live in `src/lib/prompts.ts`. Astro uses the same source text for the page, copy actions, and Markdown downloads.
 
-The Greek page and downloads keep their existing URLs. English lives at `/en/`, with downloads at `/en/prompts/*.md` and `/en/themis-prompts.md`. The English bundle is saved as `themis-prompts-en.md`. Both editions retain Greece as their default jurisdiction; the English prompts conduct the interview in English.
+The download button saves `themis-prompts.zip` in Greek and `themis-prompts-en.zip` in English, each containing four separate Markdown files. ZIP routes are `/themis-prompts.zip` and `/en/themis-prompts-en.zip`, and work with JavaScript disabled. Individual files remain at `/prompts/*.md` and `/en/prompts/*.md`; the existing combined `.md` routes remain available for compatibility. Both editions retain Greece as their default jurisdiction; the English prompts conduct the interview in English.
 
 After changing prompt text or behavior, run the checks above and redeploy.
 

@@ -1,5 +1,6 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
+const { unzipSync } = require('fflate');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -19,7 +20,7 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
     ? new URL(directory || './', baseURL.endsWith('/') ? baseURL : baseURL + '/').href
     : new URL(directory + 'index.html', baseURL).href;
   const otherLanguage = language === 'en' ? 'el' : 'en';
-  const bundleFilename = language === 'en' ? 'themis-prompts-en.md' : 'themis-prompts.md';
+  const archiveFilename = language === 'en' ? 'themis-prompts-en.zip' : 'themis-prompts.zip';
   const context = await browser.newContext({viewport: {width:1440,height:1000}, acceptDownloads:true});
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
@@ -65,6 +66,14 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   const prompts = await page.locator('#prompt-data').evaluate(el => JSON.parse(el.textContent));
+  assert.deepEqual(prompts.map(prompt => prompt.id), ['start', 'final', 'handoff', 'review']);
+  assert.deepEqual(await page.locator('[role=tab]').evaluateAll(tabs => tabs.map(tab => tab.dataset.tab)), ['start', 'final', 'handoff', 'review']);
+  assert.equal(await page.locator('#tab-final').textContent(), language === 'en' ? 'Full Check' : 'Πλήρης Έλεγχος');
+  function verifyArchive(bytes) {
+    const entries = unzipSync(bytes);
+    assert.deepEqual(Object.keys(entries).sort(), prompts.map(prompt => prompt.filename).sort(), 'ZIP contains exactly four separate prompts');
+    for (const prompt of prompts) assert.equal(Buffer.from(entries[prompt.filename]).toString('utf8'), prompt.content, prompt.id + ' ZIP content matches canonical text');
+  }
   for (const prompt of prompts) {
     const canonical = fs.readFileSync(path.join(__dirname,'src/content/prompts',directory,prompt.filename),'utf8').trim()+'\n';
     assert.equal(prompt.content, canonical, prompt.id+' canonical text');
@@ -80,21 +89,33 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   await page.locator('#tab-start').click();
   await page.locator('#tab-start').focus();
   await page.keyboard.press('ArrowRight');
-  assert.equal(await page.locator('#tab-review').getAttribute('aria-selected'),'true');
+  assert.equal(await page.locator('#tab-final').getAttribute('aria-selected'),'true');
   await page.keyboard.press('End');
+  assert.equal(await page.locator('#tab-review').getAttribute('aria-selected'),'true');
+  await page.keyboard.press('ArrowLeft');
   assert.equal(await page.locator('#tab-handoff').getAttribute('aria-selected'),'true');
   await page.keyboard.press('Home');
-  const expand = page.locator('[data-expand=start]');
-  await expand.click();
-  assert.equal(await expand.getAttribute('aria-expanded'),'true');
-  await expand.click();
-  assert.equal(await expand.getAttribute('aria-expanded'),'false');
+  for (const prompt of prompts) {
+    await page.locator('#tab-' + prompt.id).click();
+    const expand = page.locator('[data-expand=' + prompt.id + ']');
+    assert.equal(await expand.locator('.icon-expand').isVisible(), true);
+    assert.equal(await expand.locator('.icon-collapse').isVisible(), false);
+    await expand.click();
+    assert.equal(await expand.getAttribute('aria-expanded'), 'true');
+    assert.equal(await expand.locator('.icon-expand').isVisible(), false);
+    assert.equal(await expand.locator('.icon-collapse').isVisible(), true);
+    assert.equal(await page.locator('#text-' + prompt.id).evaluate(el => el.classList.contains('expanded')), true);
+    await expand.click();
+    assert.equal(await expand.getAttribute('aria-expanded'), 'false');
+    assert.equal(await expand.locator('.icon-expand').isVisible(), true);
+    assert.equal(await expand.locator('.icon-collapse').isVisible(), false);
+  }
+  await page.locator('#tab-start').click();
   const downloadPromise = page.waitForEvent('download');
   await page.locator('.download').click();
   const download = await downloadPromise;
-  assert.equal(download.suggestedFilename(),bundleFilename);
-  const downloaded = fs.readFileSync(await download.path(),'utf8');
-  for (const prompt of prompts) assert.ok(downloaded.includes(prompt.content.trim()),prompt.id+' in downloaded bundle');
+  assert.equal(download.suggestedFilename(),archiveFilename);
+  verifyArchive(fs.readFileSync(await download.path()));
   await page.evaluate(() => {
     navigator.clipboard.writeText = async () => {throw new Error('Permission denied');};
     document.execCommand = command => {window.fallbackCommand=command; return true;};
@@ -117,8 +138,17 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
       await page.screenshot({path:path.join(process.env.QA_SCREENSHOT_DIR,language+'-'+width+'.png'),fullPage:true});
     }
   }
-  await page.locator('.faq summary').first().click();
-  assert.equal(await page.locator('.faq details').first().getAttribute('open'),'');
+  assert.equal(await page.locator('.faq details').count(), 4);
+  for (const question of await page.locator('.faq details').all()) {
+    assert.equal(await question.locator('.icon-down').isVisible(), true);
+    assert.equal(await question.locator('.icon-up').isVisible(), false);
+    await question.locator('summary').click();
+    assert.equal(await question.getAttribute('open'), '');
+    assert.equal(await question.locator('.icon-down').isVisible(), false);
+    assert.equal(await question.locator('.icon-up').isVisible(), true);
+    await question.locator('summary').click();
+    assert.equal(await question.locator('.icon-down').isVisible(), true);
+  }
   assert.equal(await page.locator('a[target=_blank]:not([rel*="noopener"])').count(),0);
   assert.deepEqual(errors,[],'no runtime errors');
   await page.evaluate(() => { window.location.hash = 'sources'; });
@@ -136,8 +166,12 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   if (process.env.TEST_BASE_URL) {
     const downloadReady = fallback.waitForEvent('download');
     await fallback.locator('noscript a').click();
-    assert.equal((await downloadReady).suggestedFilename(), bundleFilename, 'localized download works without JavaScript');
+    const archive = await downloadReady;
+    assert.equal(archive.suggestedFilename(), archiveFilename, 'localized ZIP download works without JavaScript');
+    verifyArchive(fs.readFileSync(await archive.path()));
   }
+  await fallback.locator('.faq summary').first().click();
+  assert.equal(await fallback.locator('.faq .icon-up').first().isVisible(), true, 'FAQ icon changes without JavaScript');
   await fallback.locator(`.language-switch a[lang=${otherLanguage}]`).click();
   assert.equal(await fallback.locator('html').getAttribute('lang'), otherLanguage, 'language switch works without JavaScript');
   assert.equal(await fallback.locator('#text-start').inputValue(), otherCanonical);
@@ -149,6 +183,10 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
       assert.match(response.headers.get('content-type'), /text\/markdown/);
       assert.equal((await response.text()).trim() + '\n', prompt.content);
     }
+    const archiveResponse = await fetch(new URL(archiveFilename, targetURL));
+    assert.equal(archiveResponse.status, 200, 'ZIP archive served');
+    assert.match(archiveResponse.headers.get('content-type'), /application\/zip/);
+    verifyArchive(new Uint8Array(await archiveResponse.arrayBuffer()));
     const bundleResponse = await fetch(new URL('themis-prompts.md', targetURL));
     assert.equal(bundleResponse.status, 200, 'Markdown bundle served');
     assert.equal(await bundleResponse.text(), fs.readFileSync(path.join(__dirname, 'dist', directory, 'themis-prompts.md'), 'utf8'));

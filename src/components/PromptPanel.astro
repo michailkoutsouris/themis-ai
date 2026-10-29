@@ -1,5 +1,6 @@
 ---
 import type { Prompt } from '../lib/prompts';
+import DisclosureIcon from './DisclosureIcon.astro';
 import { createTranslator, type Language } from '../lib/i18n';
 
 interface Props {
@@ -24,6 +25,6 @@ const t = createTranslator(language);
   <textarea id={`text-${prompt.id}`} class="prompt-text" readonly spellcheck="false">{prompt.content}</textarea>
   <div class="prompt-bottom">
     <span>{Array.from(prompt.content).length.toLocaleString(language === 'en' ? 'en-GB' : 'el-GR')} {t("χαρακτήρες")} · {t(language === "en" ? "Αγγλικά" : "Ελληνικά")}</span>
-    <button class="text-button expand" aria-expanded="false" aria-controls={`text-${prompt.id}`} data-expand={prompt.id}>{t("Ανάπτυξη κειμένου")} <span aria-hidden="true">↗</span></button>
+    <button class="text-button expand" aria-expanded="false" aria-controls={`text-${prompt.id}`} data-expand={prompt.id}><span data-expand-label>{t("Ανάπτυξη κειμένου")}</span><DisclosureIcon kind="expand" /><DisclosureIcon kind="collapse" /></button>
   </div>
 </section>

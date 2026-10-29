@@ -21,7 +21,7 @@ npm run build
 npm test
 ```
 
-Το `dist/` είναι παραγόμενο περιεχόμενο. Μην επεξεργάζεσαι απευθείας τα αρχεία του. Το `dist/index.html` λειτουργεί και με απευθείας άνοιγμα σε browser, με ενσωματωμένα CSS, JavaScript και prompts. Το build παράγει επίσης το `dist/themis-prompts.md` και τα τέσσερα ξεχωριστά Markdown αρχεία.
+Το `dist/` είναι παραγόμενο περιεχόμενο. Μην επεξεργάζεσαι απευθείας τα αρχεία του. Το `dist/index.html` λειτουργεί και με απευθείας άνοιγμα σε browser, με ενσωματωμένα CSS, JavaScript και prompts. Το build παράγει επίσης πακέτο ZIP με τέσσερα ξεχωριστά Markdown αρχεία για κάθε γλώσσα. Η δημιουργία ZIP γίνεται μόνο στο build με το fflate. Οι υπάρχουσες λήψεις Markdown διατηρούνται.
 
 Το `npm test` ελέγχει και τις δύο γλώσσες, την εναλλαγή με και χωρίς JavaScript, και εκτελεί την πλήρη επαλήθευση μέσω Playwright και εγκατεστημένου Google Chrome. Εναλλακτικά όρισε `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` σε άλλο Chromium executable. Ελέγχονται το κανονικό κείμενο, αντιγραφή/clipboard fallbacks, καρτέλες, keyboard navigation, download, no-JS και τέσσερα responsive πλάτη. Για προαιρετικά screenshots όρισε `QA_SCREENSHOT_DIR`.
 
@@ -82,7 +82,7 @@ TEST_BASE_URL=https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev node verify.cjs
 
 Ο επιλογέας ΕΛ / EN στην κεφαλίδα αλλάζει τη γλώσσα ολόκληρης της σελίδας, των prompts και των λήψεων. Τα ελληνικά διατηρούν το `/`, ενώ τα αγγλικά βρίσκονται στο `/en/`. Η εναλλαγή διατηρεί την ενότητα όπου βρίσκεσαι όταν υπάρχει JavaScript και λειτουργεί ως κανονικός σύνδεσμος χωρίς αυτήν.
 
-Τα αγγλικά prompts βρίσκονται στο `src/content/prompts/en/`. Οι λήψεις τους είναι `/en/prompts/*.md` και `/en/themis-prompts.md`, με όνομα πακέτου `themis-prompts-en.md`. Και οι δύο εκδόσεις διατηρούν την Ελλάδα ως προεπιλεγμένη δικαιοδοσία.
+Τα αγγλικά prompts βρίσκονται στο `src/content/prompts/en/`. Το κουμπί λήψης αποθηκεύει `themis-prompts.zip` στα ελληνικά και `themis-prompts-en.zip` στα αγγλικά, με τέσσερα ξεχωριστά αρχεία Markdown. Οι διαδρομές ZIP είναι `/themis-prompts.zip` και `/en/themis-prompts-en.zip` και λειτουργούν χωρίς JavaScript. Οι παλιές διαδρομές Markdown παραμένουν διαθέσιμες. Και οι δύο εκδόσεις διατηρούν την Ελλάδα ως προεπιλεγμένη δικαιοδοσία.
 
 ## Εφέ hero και εικονίδια
 

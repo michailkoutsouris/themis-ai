@@ -13,3 +13,9 @@
 
 /en/prompts/*
   Content-Type: text/markdown; charset=utf-8
+
+/themis-prompts.zip
+  Content-Type: application/zip
+
+/en/themis-prompts-en.zip
+  Content-Type: application/zip
