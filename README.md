@@ -122,4 +122,6 @@ Model names, reasoning settings, tools, and availability can differ by account a
 
 [WTFPL 2.0](LICENSE) — do whatever you want with this project, including its source code and prompts.
 
-The header links to the GitHub repository and loads its current star and fork counts from GitHub's public API. If the request fails or is rate limited, the counts display `—` and the links remain available. No prompt or case information is sent to GitHub.
+The GitHub mark is from Primer Octicons and retains its [MIT license](public/third-party-notices.txt).
+
+The header and footer link to the GitHub repository. The page makes no background requests to GitHub.
