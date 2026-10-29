@@ -11,9 +11,9 @@ interface Props {
 const { icon, headingId, title, description } = Astro.props;
 ---
 <div class="section-header">
-  <p>{description}</p>
   <div class="section-title-row">
     <SectionIcon name={icon} />
     <h2 id={headingId}>{title}</h2>
   </div>
+  <p>{description}</p>
 </div>
