@@ -4,7 +4,7 @@ A Greek and English prompt library for structured legal research and drafting, b
 
 **[Ελληνικά](https://themis.koutsourismichalis.workers.dev/)** · **[English](https://themis.koutsourismichalis.workers.dev/en/)** · [Ελληνική τεκμηρίωση](README.el.md)
 
-Themis provides four reusable prompts for working with ChatGPT: starting a case, reviewing a draft, checking a final document, and handing work over to a new conversation. The library focuses on Greek law and civil claims, including interim measures.
+Themis provides four reusable prompts for working with ChatGPT: starting a case, checking a complete draft, handing work over to a new conversation, and reviewing a draft independently. The library focuses on Greek law and civil claims, including interim measures.
 
 ## Features
 
@@ -18,13 +18,30 @@ Themis provides four reusable prompts for working with ChatGPT: starting a case,
 
 The site is a prompt library. It does not run AI models or automatically send information to ChatGPT. Named roles inside a prompt represent different perspectives; independent agents require an environment that actually supports and invokes them.
 
+## Using Themis
+
+Open the [Greek](https://themis.koutsourismichalis.workers.dev/) or [English](https://themis.koutsourismichalis.workers.dev/en/) page, copy the main prompt, and paste it into a new ChatGPT conversation. Answer its questions before moving to drafting and checks.
+
+The tabs appear in this order; use each prompt when its stage applies:
+
+| Tab | Greek label | Use |
+| --- | --- | --- |
+| 1. Start | Εκκίνηση | Begin a new conversation and gather the case facts. |
+| 2. Full Check | Πλήρης Έλεγχος | Check the work in the same conversation after gathering facts and completing research. |
+| 3. Continue | Συνέχεια | Export the case file before moving to a new conversation. |
+| 4. Second review | Δεύτερος έλεγχος | Review a draft independently in a new conversation with the case file and key documents. |
+
+Download the [Greek ZIP](https://themis.koutsourismichalis.workers.dev/themis-prompts.zip) or [English ZIP](https://themis.koutsourismichalis.workers.dev/en/themis-prompts-en.zip). Each contains exactly four separate UTF-8 Markdown files: `themis-main.md`, `themis-final-check.md`, `themis-handoff.md`, and `themis-review.md`. Use them separately according to their purpose. Download links also work without JavaScript.
+
+Prompt text can be expanded or collapsed; the control label and icon change with its state. The four FAQ questions also have distinct open and closed icons and work without JavaScript.
+
 ## Stack
 
 Astro renders the page and creates the ZIP and Markdown downloads at build time. ZIP generation uses fflate only during the build. Cloudflare Workers Static Assets serves the generated files. The site needs no SSR adapter, persistent server, database, or runtime secrets.
 
 The wordmark and tagline share a horizontal navbar with a vertical divider. The hero fills the viewport below the navbar, with a 520px minimum and room to grow when its content needs more space.
 
-The hero uses the supplied React Bits PatternWaves shaders, adapted to Astro with OGL in the site’s cream and green palette. The background is bundled into the HTML at build time, pauses off screen, respects reduced motion, and falls back to a static background if WebGL is unavailable.
+The hero uses React Bits PatternWaves shaders, adapted to Astro with OGL in the site’s cream and green palette. The background is bundled into the HTML at build time, pauses off screen, respects reduced motion, and falls back to a static background if WebGL is unavailable.
 
 Wrangler is installed locally and pinned in the npm lockfile for reproducible deployments.
 
@@ -49,33 +66,34 @@ The generated `dist/index.html` includes its styles, JavaScript, and prompt text
 
 ```text
 src/
-  components/PromptPanel.astro   Accessible prompt panels
-  components/SectionHeading.astro Section descriptions and icon/title rows
-  components/ThemisPage.astro  Shared bilingual page, styles, and interactions
-  content/prompts/*.md          Canonical Greek prompt text
-  content/prompts/en/*.md       Canonical English prompt text
-  lib/i18n.ts                   UI translations
-  lib/hero-background.ts        Build-time background bundling
-  scripts/pattern-waves.js       Adapted WebGL wave background
-  lib/prompts.ts                Prompt metadata and display order
-  lib/prompt-archive.ts          Build-time ZIP archive generation
-  pages/index.astro             Greek page
-  pages/en/index.astro          English page
-  pages/en/prompts/[filename].ts English Markdown downloads
-  pages/en/themis-prompts-en.zip.ts English ZIP archive
-  pages/en/themis-prompts.md.ts  Legacy English Markdown bundle
-  pages/prompts/[filename].ts   Individual static Markdown downloads
-  pages/themis-prompts.zip.ts   Greek ZIP archive
-  pages/themis-prompts.md.ts    Legacy combined Markdown download
+  components/DisclosureIcon.astro     Expand/collapse and FAQ icons
+  components/PromptPanel.astro        Accessible prompt panels
+  components/SectionHeading.astro     Section icon/title rows and descriptions
+  components/ThemisPage.astro         Shared bilingual page and interactions
+  content/prompts/*.md                Canonical Greek prompt text
+  content/prompts/en/*.md             Canonical English prompt text
+  lib/i18n.ts                         UI translations
+  lib/hero-background.ts              Build-time background bundling
+  lib/prompts.ts                      Prompt metadata and display order
+  lib/prompt-archive.ts               Build-time ZIP archive generation
+  scripts/pattern-waves.js            Adapted WebGL wave background
+  pages/index.astro                   Greek page
+  pages/en/index.astro                English page
+  pages/en/prompts/[filename].ts      English Markdown downloads
+  pages/en/themis-prompts-en.zip.ts   English ZIP archive
+  pages/en/themis-prompts.md.ts       Legacy English Markdown bundle
+  pages/prompts/[filename].ts         Greek Markdown downloads
+  pages/themis-prompts.zip.ts         Greek ZIP archive
+  pages/themis-prompts.md.ts          Legacy Greek Markdown bundle
 public/
-  _headers                     Static response headers
-  favicon.svg                  Cream and green Θ favicon
-  favicon-32.png                PNG favicon fallback
-  apple-touch-icon.png          Home-screen icon
-astro.config.mjs               Static Astro build configuration
-wrangler.jsonc                 Cloudflare Worker and asset configuration
-verify.cjs                     Bilingual interaction verification
-verify-effects.cjs             Animation lifecycle and fallback checks
+  _headers                            Static response headers
+  favicon.svg                         Cream and green Θ favicon
+  favicon-32.png                      PNG favicon fallback
+  apple-touch-icon.png                Home-screen icon
+astro.config.mjs                      Static Astro build configuration
+wrangler.jsonc                        Cloudflare Worker and asset configuration
+verify.cjs                            Bilingual interaction and ZIP verification
+verify-effects.cjs                    Animation lifecycle and fallback checks
 ```
 
 ## Checks
@@ -98,7 +116,7 @@ To test an already running local or deployed site:
 TEST_BASE_URL=https://themis.koutsourismichalis.workers.dev node verify.cjs
 ```
 
-This also checks the published Markdown routes, their content types and text, and a 404 response for an unknown route.
+This also checks published ZIP and Markdown routes, their content types and contents, actual ZIP downloads with and without JavaScript, and a 404 response for an unknown route.
 
 ## Deploy to Cloudflare Workers
 
@@ -129,7 +147,7 @@ Further reading: [Astro on Cloudflare Workers](https://developers.cloudflare.com
 
 ## Editing the prompts
 
-Update the canonical Greek files in `src/content/prompts/` and their English counterparts in `src/content/prompts/en/`. UI translations live in `src/lib/i18n.ts`; both pages use `src/components/ThemisPage.astro`. Metadata, display order, and the bundle introduction live in `src/lib/prompts.ts`. Astro uses the same source text for the page, copy actions, and Markdown downloads.
+Update the canonical Greek files in `src/content/prompts/` and their English counterparts in `src/content/prompts/en/`. UI translations live in `src/lib/i18n.ts`; both pages use `src/components/ThemisPage.astro`. Metadata, display order, and the bundle introduction live in `src/lib/prompts.ts`. Astro uses the same source text for the page, copy actions, individual Markdown downloads, and files inside each ZIP archive.
 
 The download button saves `themis-prompts.zip` in Greek and `themis-prompts-en.zip` in English, each containing four separate Markdown files. ZIP routes are `/themis-prompts.zip` and `/en/themis-prompts-en.zip`, and work with JavaScript disabled. Individual files remain at `/prompts/*.md` and `/en/prompts/*.md`; the existing combined `.md` routes remain available for compatibility. Both editions retain Greece as their default jurisdiction; the English prompts conduct the interview in English.
 
@@ -147,6 +165,6 @@ Model names, reasoning settings, tools, and availability can differ by account a
 
 The project’s original code and prompts use [WTFPL 2.0](LICENSE) — do whatever you want with them. Third-party material retains its original license.
 
-The GitHub mark is from Primer Octicons (MIT). The supplied PatternWaves background is adapted from React Bits (MIT + Commons Clause) and uses OGL (Unlicense). See the [third-party notices](public/third-party-notices.txt).
+The GitHub mark is from Primer Octicons (MIT). The PatternWaves background is adapted from React Bits (MIT + Commons Clause) and uses OGL (Unlicense). See the [third-party notices](public/third-party-notices.txt).
 
 The header and footer link to the GitHub repository. The page makes no background requests to GitHub.
