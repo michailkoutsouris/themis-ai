@@ -4,6 +4,8 @@ import CopyButton from './CopyButton.astro';
 import SectionHeading from './SectionHeading.astro';
 import DisclosureIcon from './DisclosureIcon.astro';
 import { heroBackgroundScript } from '../lib/hero-background';
+import { pageMotionScript } from '../lib/page-motion';
+import '../styles/page-motion.css';
 import { getPrompts } from '../lib/prompts';
 import { createTranslator, type Language } from '../lib/i18n';
 
@@ -106,7 +108,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       </div>
     </header>
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-content"><span class="eyebrow">{t("ΑΓΩΓΕΣ & ΑΣΦΑΛΙΣΤΙΚΑ ΜΕΤΡΑ")}</span><h1 id="hero-title">{t("Η υπόθεσή σου.")}<br><em>{t("Μεθοδικά, από την αρχή.")}</em></h1><p class="hero-copy">{t("Μια ομάδα ειδικών ρόλων για την έρευνα, τις σωστές ερωτήσεις και τη σύνταξη. Αντέγραψε το prompt και ξεκίνα με τη Θέμις στο ChatGPT.")}</p><div class="hero-actions"><CopyButton promptId="start" label={t("Αντιγραφή βασικού prompt")} copiedLabel={t("Αντιγράφηκε!")} /><a class="text-link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">{t("Άνοιγμα ChatGPT ↗")}</a></div></div>
+      <div class="hero-content"><span class="eyebrow">{t("ΑΓΩΓΕΣ & ΑΣΦΑΛΙΣΤΙΚΑ ΜΕΤΡΑ")}</span><h1 id="hero-title"><span class="hero-line"><span class="hero-line-text">{t("Η υπόθεσή σου.")}</span></span><span class="hero-line"><em class="hero-line-text">{t("Μεθοδικά, από την αρχή.")}</em></span></h1><p class="hero-copy">{t("Μια ομάδα ειδικών ρόλων για την έρευνα, τις σωστές ερωτήσεις και τη σύνταξη. Αντέγραψε το prompt και ξεκίνα με τη Θέμις στο ChatGPT.")}</p><div class="hero-actions"><CopyButton promptId="start" label={t("Αντιγραφή βασικού prompt")} copiedLabel={t("Αντιγράφηκε!")} /><a class="text-link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">{t("Άνοιγμα ChatGPT ↗")}</a></div></div>
     <div class="scope-strip"><span><b aria-hidden="true">↳</b>{t("Ελλάδα · πολλαπλά αντικείμενα")}</span><span><b aria-hidden="true">↳</b>{t("Ερωτήσεις πριν από τη σύνταξη")}</span><span><b aria-hidden="true">↳</b>{t("Πλήρες κείμενο χωρίς placeholders")}</span></div>
     </section>
     </div>
@@ -202,6 +204,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       document.getElementById('panel-' + tab.dataset.tab).hidden = !active;
       if (active && focus) tab.focus();
     }
+    document.dispatchEvent(new CustomEvent('themis:tab-change', {detail:{id}}));
   }
   const copyResetTimers = new WeakMap();
   function showCopySuccess(button) {
@@ -269,13 +272,16 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
   for (const button of document.querySelectorAll('[data-expand]')) {
     button.addEventListener('click', () => {
       const field = document.getElementById('text-' + button.dataset.expand);
+      const from = field.getBoundingClientRect().height;
       const expanded = field.classList.toggle('expanded');
       button.setAttribute('aria-expanded', String(expanded));
       button.querySelector('[data-expand-label]').textContent = expanded ? messages.collapse : messages.expand;
+      document.dispatchEvent(new CustomEvent('themis:prompt-resize', {detail:{id:field.id,from}}));
     });
   }
 })();
 </script>
+<script is:inline set:html={pageMotionScript} />
 <script is:inline set:html={heroBackgroundScript} />
 </body>
 </html>

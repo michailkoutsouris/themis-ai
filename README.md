@@ -12,7 +12,8 @@ Themis provides four reusable prompts for working with ChatGPT: starting a case,
 - An ΕΛ / EN switch for the whole interface, prompt text, and downloads; it also works without JavaScript.
 - Copy individual prompts, with animated success feedback, reduced-motion support, and clipboard/manual-selection fallbacks.
 - Download a ZIP archive containing four separate Markdown prompt files.
-- Responsive layout and readable content with JavaScript disabled.
+- Staged page entrances, drawn icons and rules, interactive cards, sliding tabs, smooth FAQ folds, and a reading-progress line.
+- Responsive layout, reduced-motion support, and readable content with JavaScript disabled.
 - Self-contained HTML for offline reading after building.
 - No application accounts, API keys, analytics, cookies, or case-data storage.
 
@@ -42,6 +43,8 @@ Astro renders the page and creates the ZIP and Markdown downloads at build time.
 The wordmark and tagline share a horizontal navbar with a vertical divider. The hero fills the viewport below the navbar, with a 520px minimum and room to grow when its content needs more space.
 
 The hero uses React Bits PatternWaves shaders, adapted to Astro with OGL in the site’s cream and green palette. The background is bundled into the HTML at build time, pauses off screen, respects reduced motion, and falls back to a static background if WebGL is unavailable.
+
+Page motion uses native Web Animations and IntersectionObserver, bundled into the HTML without an animation library. Entrances play once as elements enter the viewport. Keyboard focus reveals controls immediately; reduced motion, missing browser support, JavaScript-disabled browsing, printing, and page-cache returns preserve readable content.
 
 Wrangler is installed locally and pinned in the npm lockfile for reproducible deployments.
 
@@ -77,6 +80,9 @@ src/
   lib/prompts.ts                      Prompt metadata and display order
   lib/prompt-archive.ts               Build-time ZIP archive generation
   scripts/pattern-waves.js            Adapted WebGL wave background
+  scripts/page-motion.js              Entrance and interaction choreography
+  styles/page-motion.css              Shared motion and hover treatments
+  lib/page-motion.ts                  Build-time motion-script bundling
   pages/index.astro                   Greek page
   pages/en/index.astro                English page
   pages/en/prompts/[filename].ts      English Markdown downloads
@@ -95,6 +101,7 @@ wrangler.jsonc                        Cloudflare Worker and asset configuration
 verify.cjs                            Bilingual interaction and ZIP verification
 verify-effects.cjs                    Animation lifecycle and fallback checks
 verify-copy.cjs                       Copy feedback and reduced-motion checks
+verify-motion.cjs                     Page motion and progressive-enhancement checks
 ```
 
 ## Checks
@@ -107,7 +114,7 @@ npm run deploy:dry-run
 
 `npm test` builds both languages and runs Playwright against their generated HTML. It checks canonical prompt text, all tabs and copy actions, keyboard navigation, expand/collapse icons, all four FAQ toggles, ZIP downloads and their canonical file contents, clipboard fallbacks, content without JavaScript, safe external links, runtime errors, layouts at four viewport widths, complete English UI coverage, and language switching with and without JavaScript.
 
-The effect checks verify rendered frames, off-screen pausing, reduced motion, page-cache cleanup, and usable controls when WebGL is unavailable. Copy-feedback checks cover pending clipboard writes, success and reset states, repeated clicks, keyboard use, failed copies, and reduced motion in both languages.
+The effect checks verify rendered frames, off-screen pausing, reduced motion, page-cache cleanup, and usable controls when WebGL is unavailable. Copy-feedback checks cover pending clipboard writes, success and reset states, repeated clicks, keyboard use, failed copies, and reduced motion in both languages. Page-motion checks cover one-time entrances, pointer and keyboard access, tab and FAQ transitions, textarea resizing, preference changes, reading progress, printing, and page-cache cleanup.
 
 The test suite uses an installed Google Chrome with WebGL 2 support by default. To use another Chromium executable, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Optional screenshots can be enabled with `QA_SCREENSHOT_DIR`.
 
