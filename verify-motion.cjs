@@ -3,6 +3,22 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
+async function assertTabAlignment(page, stage) {
+  const geometry = await page.locator('.tabs').evaluate(tabs => {
+    const selected = tabs.querySelector('[aria-selected=true]');
+    return {
+      indicatorX: parseFloat(tabs.style.getPropertyValue('--tab-x')),
+      selectedX: selected.offsetLeft,
+      indicatorWidth: parseFloat(tabs.style.getPropertyValue('--tab-width')),
+      selectedWidth: selected.offsetWidth,
+      offsetParentIsTablist: selected.offsetParent === tabs,
+    };
+  });
+  assert.equal(geometry.offsetParentIsTablist, true, stage + ': stable tablist coordinate system');
+  assert.equal(geometry.indicatorX, geometry.selectedX, stage + ': highlight aligns with the selected tab');
+  assert.equal(geometry.indicatorWidth, geometry.selectedWidth, stage + ': highlight matches the selected tab width');
+}
+
 (async () => {
   const browser = await chromium.launch({
     ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
@@ -32,6 +48,7 @@ const { pathToFileURL } = require('node:url');
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
       await page.goto(urlFor(language));
+      await assertTabAlignment(page, 'first load before scrolling or clicking');
       await page.waitForFunction(() => window.motionCalls.some(call => call.element.matches('.hero-line-text')));
       assert.equal(await page.locator('html').getAttribute('data-page-motion'), 'full');
       await page.locator('[data-copy=start]').focus();
@@ -49,6 +66,7 @@ const { pathToFileURL } = require('node:url');
       assert.equal(await page.evaluate(() => window.motionCalls.filter(call => call.element.matches('.step')).length), stepCount, 'scrolling back does not replay entrances');
 
       // Pointer focus must not shift a delayed entrance between pointer down/up.
+      await assertTabAlignment(page, 'after the library entrance');
       await page.locator('#tab-start').click();
       await page.locator('#copy-selected').click();
       assert.equal(await page.evaluate(() => window.copyCount), 2, 'pointer copy survives the library entrance');
@@ -91,9 +109,17 @@ const { pathToFileURL } = require('node:url');
       await page.evaluate(() => { window.dispatchEvent(new Event('afterprint')); window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })); window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); });
       assert.equal(await page.locator('.reading-progress').count(), 1, 'page-cache return does not duplicate decorations');
       assert.equal(await page.locator('html').getAttribute('data-page-motion'), 'full');
+      await assertTabAlignment(page, 'page-cache return');
       for (const width of [320, 390, 768, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
+        await page.waitForFunction(() => {
+          const tabs = document.querySelector('.tabs');
+          return parseFloat(tabs.style.getPropertyValue('--tab-width')) === tabs.querySelector('[aria-selected=true]').offsetWidth;
+        });
+        await assertTabAlignment(page, 'viewport width ' + width);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'no overflow at ' + width);
+        await page.reload();
+        await assertTabAlignment(page, 'fresh load at width ' + width);
       }
       assert.deepEqual(errors, []);
       await context.close();

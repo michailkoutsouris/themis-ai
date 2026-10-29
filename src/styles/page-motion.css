@@ -11,7 +11,8 @@
 .faq details[open][data-faq-target=closed] .icon-down{display:block}
 .faq details[open] summary{color:var(--green)}
 .faq summary:focus-visible{outline:3px solid var(--orange);outline-offset:6px}
-.tabs[data-motion-tabs]{position:relative;isolation:isolate}
+/* Establish the indicator's coordinate system before its first measurement. */
+.tabs{position:relative;isolation:isolate}
 .tabs[data-motion-tabs]::before,.tabs[data-motion-tabs]::after{content:'';position:absolute;left:0;bottom:0;width:var(--tab-width);transform:translateX(var(--tab-x));pointer-events:none;transition:transform .5s var(--motion-ease),width .5s var(--motion-ease)}
 .tabs[data-motion-tabs]::before{top:0;background:#dfe7d780;z-index:-1}
 .tabs[data-motion-tabs]::after{height:2px;background:var(--green)}
