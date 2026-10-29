@@ -7,7 +7,6 @@
   function mountMotion() {
     const root = document.documentElement;
     const preference = matchMedia('(prefers-reduced-motion: reduce)');
-    const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
     const supported = typeof Element.prototype.animate === 'function' && typeof IntersectionObserver === 'function';
     const active = new Map();
     const faqRuns = new Map();
@@ -16,10 +15,6 @@
     const entries = new Map();
     let observer;
     let frame = 0;
-    let pointerFrame = 0;
-    let pointerCard;
-    let pointerX = 0;
-    let pointerY = 0;
     let alive = true;
     let pointerFocusUntil = 0;
     let reduced = preference.matches || !supported;
@@ -100,7 +95,6 @@
     register('.source-row', 'rise', 65, 40, true);
     register('.faq details', 'rise', 65, 60, true);
     register('.closing-copy, .closing-meta', 'rise', 100, 50);
-    for (const element of document.querySelectorAll('.step, .person, .model-card')) element.classList.add('motion-card');
 
     const progress = document.querySelector('.reading-progress') || document.createElement('div');
     if (!progress.isConnected) {
@@ -124,20 +118,6 @@
     }
     function scheduleProgress() {
       if (!frame) frame = requestAnimationFrame(updateProgress);
-    }
-    function onPointer(event) {
-      if (reduced || !finePointer.matches || event.pointerType === 'touch') return;
-      pointerCard = event.target instanceof Element ? event.target.closest('.motion-card') : null;
-      if (!pointerCard) return;
-      pointerX = event.clientX;
-      pointerY = event.clientY;
-      if (!pointerFrame) pointerFrame = requestAnimationFrame(() => {
-        pointerFrame = 0;
-        if (!pointerCard || reduced || !alive) return;
-        const bounds = pointerCard.getBoundingClientRect();
-        pointerCard.style.setProperty('--spot-x', `${pointerX - bounds.left}px`);
-        pointerCard.style.setProperty('--spot-y', `${pointerY - bounds.top}px`);
-      });
     }
     function closeRun(details, run, complete) {
       if (faqRuns.get(details) !== run) return;
@@ -217,7 +197,6 @@
     listen(preference, 'change', syncPreference);
     listen(window, 'beforeprint', () => syncPreference(true));
     listen(window, 'afterprint', () => syncPreference());
-    listen(document, 'pointermove', onPointer, { passive: true });
     listen(document, 'pointerdown', () => { pointerFocusUntil = performance.now() + 250; }, { capture: true, passive: true });
     listen(document, 'keydown', () => { pointerFocusUntil = 0; }, { capture: true });
     listen(document, 'focusin', event => {
@@ -247,7 +226,6 @@
       observer?.disconnect();
       resizeObserver?.disconnect();
       cancelAnimationFrame(frame);
-      cancelAnimationFrame(pointerFrame);
       for (const [details, run] of faqRuns) { details.open = run.opening; delete details.dataset.faqTarget; }
       faqRuns.clear();
       for (const animation of active.keys()) animation.cancel();

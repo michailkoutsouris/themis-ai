@@ -12,7 +12,7 @@ Themis provides four reusable prompts for working with ChatGPT: starting a case,
 - An ΕΛ / EN switch for the whole interface, prompt text, and downloads; it also works without JavaScript.
 - Copy individual prompts, with animated success feedback, reduced-motion support, and clipboard/manual-selection fallbacks.
 - Download a ZIP archive containing four separate Markdown prompt files.
-- Staged page entrances, drawn icons and rules, interactive cards, sliding tabs, smooth FAQ folds, and a reading-progress line.
+- Staged page entrances, drawn icons and rules, sliding tabs, smooth FAQ folds, and a reading-progress line. The hero background animates independently of the pointer.
 - Responsive layout, reduced-motion support, and readable content with JavaScript disabled.
 - Self-contained HTML for offline reading after building.
 - No application accounts, API keys, analytics, cookies, or case-data storage.
@@ -81,7 +81,7 @@ src/
   lib/prompt-archive.ts               Build-time ZIP archive generation
   scripts/pattern-waves.js            Adapted WebGL wave background
   scripts/page-motion.js              Entrance and interaction choreography
-  styles/page-motion.css              Shared motion and hover treatments
+  styles/page-motion.css              Shared page-motion treatments
   lib/page-motion.ts                  Build-time motion-script bundling
   pages/index.astro                   Greek page
   pages/en/index.astro                English page

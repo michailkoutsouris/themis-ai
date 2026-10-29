@@ -459,7 +459,7 @@ function mountPatternWaves(container) {
     fade: 'edges',
     fadeSize: 0.5,
     characters: DEFAULT_CHARACTERS,
-    interactive: true,
+    interactive: false,
     cursorSize: 60,
     cursorStrength: 0.45,
     intro: true,
@@ -612,7 +612,7 @@ function mountPatternWaves(container) {
   const pointer = { x: 0, y: 0, inside: false, placed: false, lastX: 0, lastY: 0, burst: 0 };
 
   const buildRipple = () => {
-    if (!floatTargets) return;
+    if (!settings.interactive || !floatTargets) return;
     const w = clamp(Math.ceil(width / RIPPLE_CELL), 4, 512);
     const h = clamp(Math.ceil(height / RIPPLE_CELL), 4, 512);
     if (ripple && ripple.width === w && ripple.height === h) return;
@@ -781,49 +781,6 @@ function mountPatternWaves(container) {
     raf = requestAnimationFrame(frame);
   };
 
-  const locate = e => {
-    const rect = container.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    return { x, y, inside: x >= 0 && y >= 0 && x <= rect.width && y <= rect.height };
-  };
-
-  const onPointerMove = e => {
-    const spot = locate(e);
-    pointer.x = spot.x;
-    pointer.y = spot.y;
-    if (spot.inside !== pointer.inside) pointer.placed = false;
-    pointer.inside = spot.inside;
-    if (spot.inside) start();
-  };
-
-  const onPointerDown = e => {
-    const spot = locate(e);
-    if (!spot.inside) return;
-    pointer.x = spot.x;
-    pointer.y = spot.y;
-    if (!pointer.inside) {
-      pointer.lastX = spot.x;
-      pointer.lastY = spot.y;
-    }
-    pointer.burst = 1.2;
-    start();
-  };
-
-  const onPointerLeave = () => {
-    pointer.inside = false;
-    pointer.placed = false;
-    start();
-  };
-
-  const onPointerOut = e => {
-    if (!e.relatedTarget) onPointerLeave();
-  };
-
-  const onPointerUp = e => {
-    if (e.pointerType === 'touch') onPointerLeave();
-  };
-
   const onVisibility = () => {
     visible = inViewport && !document.hidden;
     if (visible) start();
@@ -836,11 +793,6 @@ function mountPatternWaves(container) {
   };
   motionPreference.addEventListener('change', onMotionChange);
 
-  window.addEventListener('pointermove', onPointerMove, { passive: true });
-  window.addEventListener('pointerdown', onPointerDown, { passive: true });
-  window.addEventListener('pointerout', onPointerOut, { passive: true });
-  window.addEventListener('pointerup', onPointerUp, { passive: true });
-  window.addEventListener('blur', onPointerLeave);
   document.addEventListener('visibilitychange', onVisibility);
 
   const resizeObserver = new ResizeObserver(resize);
@@ -859,11 +811,6 @@ function mountPatternWaves(container) {
     cancelAnimationFrame(raf);
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerdown', onPointerDown);
-    window.removeEventListener('pointerout', onPointerOut);
-    window.removeEventListener('pointerup', onPointerUp);
-    window.removeEventListener('blur', onPointerLeave);
     document.removeEventListener('visibilitychange', onVisibility);
     motionPreference.removeEventListener('change', onMotionChange);
     if (ripple) {
