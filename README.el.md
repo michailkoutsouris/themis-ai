@@ -1,6 +1,6 @@
 # Θέμις — Στατική βιβλιοθήκη prompts
 
-Ελληνικά prompts για έρευνα και σύνταξη αγωγών/αιτήσεων ασφαλιστικών μέτρων. Έκδοση 1.0, 29.10.2026.
+Prompts στα ελληνικά και αγγλικά για έρευνα και σύνταξη αγωγών/αιτήσεων ασφαλιστικών μέτρων. Έκδοση 1.0, 29.10.2026.
 
 ## Astro + Cloudflare Workers
 
@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Οι κανονικές εκδόσεις των prompts βρίσκονται στο `src/content/prompts/`. Η σελίδα είναι το `src/pages/index.astro`, τα panels το `src/components/PromptPanel.astro` και τα μεταδεδομένα/το ενιαίο Markdown το `src/lib/prompts.ts`.
+Οι κανονικές εκδόσεις των prompts βρίσκονται στο `src/content/prompts/`. Η κοινή σελίδα είναι το `src/components/ThemisPage.astro`, οι μεταφράσεις UI το `src/lib/i18n.ts`, τα panels το `src/components/PromptPanel.astro` και τα μεταδεδομένα/το ενιαίο Markdown το `src/lib/prompts.ts`.
 
 ```sh
 npm run check
@@ -23,7 +23,7 @@ npm test
 
 Το `dist/` είναι παραγόμενο περιεχόμενο. Μην επεξεργάζεσαι απευθείας τα αρχεία του. Το `dist/index.html` λειτουργεί και με απευθείας άνοιγμα σε browser, με ενσωματωμένα CSS, JavaScript και prompts. Το build παράγει επίσης το `dist/themis-prompts.md` και τα τέσσερα ξεχωριστά Markdown αρχεία.
 
-Το `npm test` εκτελεί την υπάρχουσα πλήρη επαλήθευση μέσω Playwright και εγκατεστημένου Google Chrome. Εναλλακτικά όρισε `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` σε άλλο Chromium executable. Ελέγχονται το κανονικό κείμενο, αντιγραφή/clipboard fallbacks, καρτέλες, keyboard navigation, download, no-JS και τέσσερα responsive πλάτη. Για προαιρετικά screenshots όρισε `QA_SCREENSHOT_DIR`.
+Το `npm test` ελέγχει και τις δύο γλώσσες, την εναλλαγή με και χωρίς JavaScript, και εκτελεί την πλήρη επαλήθευση μέσω Playwright και εγκατεστημένου Google Chrome. Εναλλακτικά όρισε `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` σε άλλο Chromium executable. Ελέγχονται το κανονικό κείμενο, αντιγραφή/clipboard fallbacks, καρτέλες, keyboard navigation, download, no-JS και τέσσερα responsive πλάτη. Για προαιρετικά screenshots όρισε `QA_SCREENSHOT_DIR`.
 
 ## Deployment
 
@@ -77,3 +77,9 @@ TEST_BASE_URL=https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev node verify.cjs
 Το εικονίδιο GitHub προέρχεται από το Primer Octicons και διατηρεί την [άδεια MIT](public/third-party-notices.txt).
 
 Η κεφαλίδα και το υποσέλιδο συνδέουν το αποθετήριο GitHub. Η σελίδα δεν πραγματοποιεί αιτήματα παρασκηνίου προς το GitHub.
+
+## Ελληνικά και αγγλικά
+
+Ο επιλογέας ΕΛ / EN στην κεφαλίδα αλλάζει τη γλώσσα ολόκληρης της σελίδας, των prompts και των λήψεων. Τα ελληνικά διατηρούν το `/`, ενώ τα αγγλικά βρίσκονται στο `/en/`. Η εναλλαγή διατηρεί την ενότητα όπου βρίσκεσαι όταν υπάρχει JavaScript και λειτουργεί ως κανονικός σύνδεσμος χωρίς αυτήν.
+
+Τα αγγλικά prompts βρίσκονται στο `src/content/prompts/en/`. Οι λήψεις τους είναι `/en/prompts/*.md` και `/en/themis-prompts.md`, με όνομα πακέτου `themis-prompts-en.md`. Και οι δύο εκδόσεις διατηρούν την Ελλάδα ως προεπιλεγμένη δικαιοδοσία.

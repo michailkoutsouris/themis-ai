@@ -1,12 +1,15 @@
 ---
 import type { Prompt } from '../lib/prompts';
+import { createTranslator, type Language } from '../lib/i18n';
 
 interface Props {
   prompt: Prompt;
   index: number;
+  language: Language;
 }
 
-const { prompt, index } = Astro.props;
+const { prompt, index, language } = Astro.props;
+const t = createTranslator(language);
 ---
 <section class="prompt-panel" id={`panel-${prompt.id}`} role="tabpanel" aria-labelledby={`tab-${prompt.id}`} hidden={index !== 0}>
   <div class="prompt-heading">
@@ -17,10 +20,10 @@ const { prompt, index } = Astro.props;
     </div>
     <span class="file-type">.md</span>
   </div>
-  <label class="sr-only" for={`text-${prompt.id}`}>{prompt.title} — πλήρες κείμενο για αντιγραφή</label>
+  <label class="sr-only" for={`text-${prompt.id}`}>{prompt.title} — {t("πλήρες κείμενο για αντιγραφή")}</label>
   <textarea id={`text-${prompt.id}`} class="prompt-text" readonly spellcheck="false">{prompt.content}</textarea>
   <div class="prompt-bottom">
-    <span>{Array.from(prompt.content).length.toLocaleString('en-US')} χαρακτήρες · Ελληνικά</span>
-    <button class="text-button expand" aria-expanded="false" aria-controls={`text-${prompt.id}`} data-expand={prompt.id}>Ανάπτυξη κειμένου <span aria-hidden="true">↗</span></button>
+    <span>{Array.from(prompt.content).length.toLocaleString(language === 'en' ? 'en-GB' : 'el-GR')} {t("χαρακτήρες")} · {t(language === "en" ? "Αγγλικά" : "Ελληνικά")}</span>
+    <button class="text-button expand" aria-expanded="false" aria-controls={`text-${prompt.id}`} data-expand={prompt.id}>{t("Ανάπτυξη κειμένου")} <span aria-hidden="true">↗</span></button>
   </div>
 </section>

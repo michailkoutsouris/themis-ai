@@ -7,3 +7,9 @@
 
 /prompts/*
   Content-Type: text/markdown; charset=utf-8
+
+/en/themis-prompts.md
+  Content-Type: text/markdown; charset=utf-8
+
+/en/prompts/*
+  Content-Type: text/markdown; charset=utf-8

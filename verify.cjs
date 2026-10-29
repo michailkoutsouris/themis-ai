@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 'dist/index.html')).href;
+const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 'dist/index.html')).href;
 
 (async () => {
   const browser = await chromium.launch({
@@ -13,6 +13,13 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
     headless: true,
   });
   try {
+  for (const language of ['el', 'en']) {
+  const directory = language === 'en' ? 'en/' : '';
+  const targetURL = process.env.TEST_BASE_URL
+    ? new URL(directory || './', baseURL.endsWith('/') ? baseURL : baseURL + '/').href
+    : new URL(directory + 'index.html', baseURL).href;
+  const otherLanguage = language === 'en' ? 'el' : 'en';
+  const bundleFilename = language === 'en' ? 'themis-prompts-en.md' : 'themis-prompts.md';
   const context = await browser.newContext({viewport: {width:1440,height:1000}, acceptDownloads:true});
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
@@ -23,8 +30,18 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
     Object.defineProperty(navigator, 'clipboard', {configurable:true, value:{writeText:async value => {window.copied.push(value);}}});
   });
   await page.goto(targetURL);
-  assert.match(await page.title(), /Θέμις/);
-  assert.equal(await page.locator('.brand-name').textContent(), 'Θέμις.');
+  assert.match(await page.title(), language === 'en' ? /Themis/ : /Θέμις/);
+  assert.equal(await page.locator('html').getAttribute('lang'), language);
+  assert.equal(await page.locator('.language-switch [aria-current=page]').getAttribute('lang'), language);
+  assert.equal(await page.locator('.brand-name').textContent(), language === 'en' ? 'Themis.' : 'Θέμις.');
+  if (language === 'en') {
+    const untranslated = await page.evaluate(() => {
+      const body = document.body.cloneNode(true);
+      for (const element of body.querySelectorAll('script, textarea, .language-switch')) element.remove();
+      return /[\p{Script=Greek}]/u.test(body.textContent);
+    });
+    assert.equal(untranslated, false, 'English UI contains no untranslated Greek text');
+  }
   assert.equal(await page.locator('.seal, .scope-art').count(), 0);
   assert.equal(await page.locator('.repo-link').getAttribute('href'), 'https://github.com/michailkoutsouris/themis-ai');
   assert.equal(await page.locator('.license-note a').first().getAttribute('href'), 'https://github.com/michailkoutsouris/themis-ai/blob/main/LICENSE');
@@ -48,7 +65,7 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   const prompts = await page.locator('#prompt-data').evaluate(el => JSON.parse(el.textContent));
   for (const prompt of prompts) {
-    const canonical = fs.readFileSync(path.join(__dirname,'src/content/prompts',prompt.filename),'utf8').trim()+'\n';
+    const canonical = fs.readFileSync(path.join(__dirname,'src/content/prompts',directory,prompt.filename),'utf8').trim()+'\n';
     assert.equal(prompt.content, canonical, prompt.id+' canonical text');
     assert.equal(await page.locator('#text-'+prompt.id).inputValue(), canonical, prompt.id+' visible text');
     await page.locator('#tab-'+prompt.id).click();
@@ -74,7 +91,7 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
   const downloadPromise = page.waitForEvent('download');
   await page.locator('.download').click();
   const download = await downloadPromise;
-  assert.equal(download.suggestedFilename(),'themis-prompts.md');
+  assert.equal(download.suggestedFilename(),bundleFilename);
   const downloaded = fs.readFileSync(await download.path(),'utf8');
   for (const prompt of prompts) assert.ok(downloaded.includes(prompt.content.trim()),prompt.id+' in downloaded bundle');
   await page.evaluate(() => {
@@ -83,10 +100,10 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
   });
   await page.locator('#copy-selected').click();
   assert.equal(await page.evaluate(() => window.fallbackCommand),'copy');
-  assert.match(await page.locator('#toast').textContent(),/Αντιγράφηκε/);
+  assert.match(await page.locator('#toast').textContent(),language === 'en' ? /Copied:/ : /Αντιγράφηκε/);
   await page.evaluate(() => {document.execCommand = () => false;});
   await page.locator('#copy-selected').click();
-  assert.match(await page.locator('#toast').textContent(),/χειροκίνητη αντιγραφή/);
+  assert.match(await page.locator('#toast').textContent(),language === 'en' ? /manually/ : /χειροκίνητη αντιγραφή/);
   assert.equal(await page.locator('#text-start').evaluate(el => el.selectionEnd-el.selectionStart),prompts[0].content.length);
   for (const width of [320,390,768,1440]) {
     await page.setViewportSize({width,height:1000});
@@ -96,34 +113,50 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
     if (process.env.QA_SCREENSHOT_DIR && (width===390 || width===1440)) {
       fs.mkdirSync(process.env.QA_SCREENSHOT_DIR, { recursive: true });
       await page.evaluate(() => window.scrollTo(0,0));
-      await page.screenshot({path:path.join(process.env.QA_SCREENSHOT_DIR,width+'.png'),fullPage:true});
+      await page.screenshot({path:path.join(process.env.QA_SCREENSHOT_DIR,language+'-'+width+'.png'),fullPage:true});
     }
   }
   await page.locator('.faq summary').first().click();
   assert.equal(await page.locator('.faq details').first().getAttribute('open'),'');
   assert.equal(await page.locator('a[target=_blank]:not([rel*="noopener"])').count(),0);
   assert.deepEqual(errors,[],'no runtime errors');
+  await page.evaluate(() => { window.location.hash = 'sources'; });
+  await page.locator(`.language-switch a[lang=${otherLanguage}]`).click();
+  assert.equal(await page.locator('html').getAttribute('lang'), otherLanguage, 'language switch changes the page language');
+  assert.equal(new URL(page.url()).hash, '#sources', 'language switch preserves the section');
+  const otherCanonical = fs.readFileSync(path.join(__dirname, 'src/content/prompts', otherLanguage === 'en' ? 'en' : '', 'themis-main.md'), 'utf8').trim() + '\n';
+  assert.equal(await page.locator('#text-start').inputValue(), otherCanonical, 'language switch changes prompt text');
   await context.close();
   const noJS = await browser.newContext({javaScriptEnabled:false});
   const fallback = await noJS.newPage();
   await fallback.goto(targetURL);
   assert.equal(await fallback.locator('#text-start').inputValue(),prompts[0].content);
   assert.ok(await fallback.locator('noscript').isVisible());
+  if (process.env.TEST_BASE_URL) {
+    const downloadReady = fallback.waitForEvent('download');
+    await fallback.locator('noscript a').click();
+    assert.equal((await downloadReady).suggestedFilename(), bundleFilename, 'localized download works without JavaScript');
+  }
+  await fallback.locator(`.language-switch a[lang=${otherLanguage}]`).click();
+  assert.equal(await fallback.locator('html').getAttribute('lang'), otherLanguage, 'language switch works without JavaScript');
+  assert.equal(await fallback.locator('#text-start').inputValue(), otherCanonical);
   await noJS.close();
   if (process.env.TEST_BASE_URL) {
     for (const prompt of prompts) {
-      const response = await fetch(new URL('/prompts/' + prompt.filename, targetURL));
+      const response = await fetch(new URL('prompts/' + prompt.filename, targetURL));
       assert.equal(response.status, 200, prompt.filename + ' served');
       assert.match(response.headers.get('content-type'), /text\/markdown/);
       assert.equal((await response.text()).trim() + '\n', prompt.content);
     }
-    const bundleResponse = await fetch(new URL('/themis-prompts.md', targetURL));
+    const bundleResponse = await fetch(new URL('themis-prompts.md', targetURL));
     assert.equal(bundleResponse.status, 200, 'Markdown bundle served');
-    assert.equal(await bundleResponse.text(), fs.readFileSync(path.join(__dirname, 'dist/themis-prompts.md'), 'utf8'));
-    assert.equal((await fetch(new URL('/this-page-does-not-exist', targetURL))).status, 404);
+    assert.equal(await bundleResponse.text(), fs.readFileSync(path.join(__dirname, 'dist', directory, 'themis-prompts.md'), 'utf8'));
+    assert.equal((await fetch(new URL('this-page-does-not-exist', targetURL))).status, 404);
+  }
+  console.log('PASS: ' + language + ' — canonical prompts, copy/download, clipboard fallbacks, keyboard, responsive layouts, no-JS, and language switching.');
   }
   } finally {
     await browser.close();
   }
-  console.log('PASS: canonical prompts, 4 tabs/copy actions, hero copy, keyboard, expand/collapse, Markdown download, clipboard fallbacks, no-JS, 4 responsive widths, safe links, no JS errors, sticky sidebar geometry, repository/license links.');
+  console.log('PASS: both languages, sticky sidebar geometry, repository/license links, and no runtime errors.');
 })().catch(error => {console.error(error);process.exit(1);});

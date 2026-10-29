@@ -1,14 +1,15 @@
 # Θέμις · Themis
 
-A Greek-language prompt library for structured legal research and drafting, built with Astro and deployed to Cloudflare Workers Static Assets.
+A Greek and English prompt library for structured legal research and drafting, built with Astro and deployed to Cloudflare Workers Static Assets.
 
-**[Open the live site](https://themis.koutsourismichalis.workers.dev)** · [Ελληνική τεκμηρίωση](README.el.md)
+**[Ελληνικά](https://themis.koutsourismichalis.workers.dev/)** · **[English](https://themis.koutsourismichalis.workers.dev/en/)** · [Ελληνική τεκμηρίωση](README.el.md)
 
 Themis provides four reusable prompts for working with ChatGPT: starting a case, reviewing a draft, checking a final document, and handing work over to a new conversation. The library focuses on Greek law and civil claims, including interim measures.
 
 ## Features
 
-- Four complete Greek prompts with accessible tabs and keyboard navigation.
+- Four complete prompts in Greek and English, with accessible tabs and keyboard navigation.
+- An ΕΛ / EN switch for the whole interface, prompt text, and downloads; it also works without JavaScript.
 - Copy individual prompts, with clipboard and manual-selection fallbacks.
 - Download the complete prompt bundle or individual Markdown files.
 - Responsive layout and readable content with JavaScript disabled.
@@ -45,9 +46,15 @@ The generated `dist/index.html` includes its styles, JavaScript, and prompt text
 ```text
 src/
   components/PromptPanel.astro   Accessible prompt panels
+  components/ThemisPage.astro  Shared bilingual page, styles, and interactions
   content/prompts/*.md          Canonical Greek prompt text
+  content/prompts/en/*.md       Canonical English prompt text
+  lib/i18n.ts                   UI translations
   lib/prompts.ts                Prompt metadata and bundle generation
-  pages/index.astro             Main page, styles, and interactions
+  pages/index.astro             Greek page
+  pages/en/index.astro          English page
+  pages/en/prompts/[filename].ts English Markdown downloads
+  pages/en/themis-prompts.md.ts  English prompt bundle
   pages/prompts/[filename].ts   Individual static Markdown downloads
   pages/themis-prompts.md.ts    Combined static Markdown download
 public/
@@ -65,7 +72,7 @@ npm test
 npm run deploy:dry-run
 ```
 
-`npm test` builds the site and runs Playwright against the generated HTML. It checks canonical prompt text, all tabs and copy actions, keyboard navigation, expand/collapse, Markdown downloads, clipboard fallbacks, content without JavaScript, safe external links, runtime errors, and layouts at four viewport widths.
+`npm test` builds both languages and runs Playwright against their generated HTML. It checks canonical prompt text, all tabs and copy actions, keyboard navigation, expand/collapse, Markdown downloads, clipboard fallbacks, content without JavaScript, safe external links, runtime errors, layouts at four viewport widths, complete English UI coverage, and language switching with and without JavaScript.
 
 The test suite uses an installed Google Chrome by default. To use another Chromium executable, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Optional screenshots can be enabled with `QA_SCREENSHOT_DIR`.
 
@@ -106,7 +113,9 @@ Further reading: [Astro on Cloudflare Workers](https://developers.cloudflare.com
 
 ## Editing the prompts
 
-Update the canonical files in `src/content/prompts/`. Metadata, display order, and the bundle introduction live in `src/lib/prompts.ts`. Astro uses the same source text for the page, copy actions, and Markdown downloads.
+Update the canonical Greek files in `src/content/prompts/` and their English counterparts in `src/content/prompts/en/`. UI translations live in `src/lib/i18n.ts`; both pages use `src/components/ThemisPage.astro`. Metadata, display order, and the bundle introduction live in `src/lib/prompts.ts`. Astro uses the same source text for the page, copy actions, and Markdown downloads.
+
+The Greek page and downloads keep their existing URLs. English lives at `/en/`, with downloads at `/en/prompts/*.md` and `/en/themis-prompts.md`. The English bundle is saved as `themis-prompts-en.md`. Both editions retain Greece as their default jurisdiction; the English prompts conduct the interview in English.
 
 After changing prompt text or behavior, run the checks above and redeploy.
 
