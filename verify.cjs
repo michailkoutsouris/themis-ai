@@ -3,9 +3,16 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
+const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 'dist/index.html')).href;
 
 (async () => {
-  const browser = await chromium.launch({executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true});
+  const browser = await chromium.launch({
+    ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+      : { channel: 'chrome' }),
+    headless: true,
+  });
+  try {
   const context = await browser.newContext({viewport: {width:1440,height:1000}, acceptDownloads:true});
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
@@ -15,11 +22,11 @@ const { pathToFileURL } = require('node:url');
     window.copied = [];
     Object.defineProperty(navigator, 'clipboard', {configurable:true, value:{writeText:async value => {window.copied.push(value);}}});
   });
-  await page.goto(pathToFileURL(path.join(__dirname,'dist/index.html')).href);
+  await page.goto(targetURL);
   assert.match(await page.title(), /Θέμις/);
   const prompts = await page.locator('#prompt-data').evaluate(el => JSON.parse(el.textContent));
   for (const prompt of prompts) {
-    const canonical = fs.readFileSync(path.join(__dirname,'dist/prompts',prompt.filename),'utf8').trim()+'\n';
+    const canonical = fs.readFileSync(path.join(__dirname,'src/content/prompts',prompt.filename),'utf8').trim()+'\n';
     assert.equal(prompt.content, canonical, prompt.id+' canonical text');
     assert.equal(await page.locator('#text-'+prompt.id).inputValue(), canonical, prompt.id+' visible text');
     await page.locator('#tab-'+prompt.id).click();
@@ -64,9 +71,10 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true,'no page overflow at '+width);
     const visibleControls = page.locator('button:visible, a:visible');
     assert.ok(await visibleControls.count()>10);
-    if (width===390 || width===1440) {
+    if (process.env.QA_SCREENSHOT_DIR && (width===390 || width===1440)) {
+      fs.mkdirSync(process.env.QA_SCREENSHOT_DIR, { recursive: true });
       await page.evaluate(() => window.scrollTo(0,0));
-      await page.screenshot({path:'/tmp/themis-qa/'+width+'.png',fullPage:true});
+      await page.screenshot({path:path.join(process.env.QA_SCREENSHOT_DIR,width+'.png'),fullPage:true});
     }
   }
   await page.locator('.faq summary').first().click();
@@ -76,9 +84,24 @@ const { pathToFileURL } = require('node:url');
   await context.close();
   const noJS = await browser.newContext({javaScriptEnabled:false});
   const fallback = await noJS.newPage();
-  await fallback.goto(pathToFileURL(path.join(__dirname,'dist/index.html')).href);
+  await fallback.goto(targetURL);
   assert.equal(await fallback.locator('#text-start').inputValue(),prompts[0].content);
   assert.ok(await fallback.locator('noscript').isVisible());
-  await browser.close();
+  await noJS.close();
+  if (process.env.TEST_BASE_URL) {
+    for (const prompt of prompts) {
+      const response = await fetch(new URL('/prompts/' + prompt.filename, targetURL));
+      assert.equal(response.status, 200, prompt.filename + ' served');
+      assert.match(response.headers.get('content-type'), /text\/markdown/);
+      assert.equal((await response.text()).trim() + '\n', prompt.content);
+    }
+    const bundleResponse = await fetch(new URL('/themis-prompts.md', targetURL));
+    assert.equal(bundleResponse.status, 200, 'Markdown bundle served');
+    assert.equal(await bundleResponse.text(), fs.readFileSync(path.join(__dirname, 'dist/themis-prompts.md'), 'utf8'));
+    assert.equal((await fetch(new URL('/this-page-does-not-exist', targetURL))).status, 404);
+  }
+  } finally {
+    await browser.close();
+  }
   console.log('PASS: canonical prompts, 4 tabs/copy actions, hero copy, keyboard, expand/collapse, Markdown download, clipboard fallbacks, no-JS, 4 responsive widths, safe links, no JS errors.');
 })().catch(error => {console.error(error);process.exit(1);});

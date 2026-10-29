@@ -1,0 +1,26 @@
+{
+  "name": "themis",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "check": "astro check",
+    "preview": "npm run build && wrangler dev",
+    "test": "npm run build && node verify.cjs",
+    "deploy": "npm run check && npm run build && wrangler deploy",
+    "deploy:dry-run": "npm run check && npm run build && wrangler deploy --dry-run"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@types/node": "26.6.6",
+    "astro": "7.4.4",
+    "playwright": "1.64.1",
+    "typescript": "6.0.3",
+    "wrangler": "4.155.0"
+  }
+}

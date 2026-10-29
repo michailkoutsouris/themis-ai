@@ -1,0 +1,26 @@
+---
+import type { Prompt } from '../lib/prompts';
+
+interface Props {
+  prompt: Prompt;
+  index: number;
+}
+
+const { prompt, index } = Astro.props;
+---
+<section class="prompt-panel" id={`panel-${prompt.id}`} role="tabpanel" aria-labelledby={`tab-${prompt.id}`} hidden={index !== 0}>
+  <div class="prompt-heading">
+    <div>
+      <span class="eyebrow">PROMPT {String(index + 1).padStart(2, '0')} / 04</span>
+      <h3>{prompt.title}</h3>
+      <p>{prompt.description}</p>
+    </div>
+    <span class="file-type">.md</span>
+  </div>
+  <label class="sr-only" for={`text-${prompt.id}`}>{prompt.title} — πλήρες κείμενο για αντιγραφή</label>
+  <textarea id={`text-${prompt.id}`} class="prompt-text" readonly spellcheck="false">{prompt.content}</textarea>
+  <div class="prompt-bottom">
+    <span>{Array.from(prompt.content).length.toLocaleString('en-US')} χαρακτήρες · Ελληνικά</span>
+    <button class="text-button expand" aria-expanded="false" aria-controls={`text-${prompt.id}`} data-expand={prompt.id}>Ανάπτυξη κειμένου <span aria-hidden="true">↗</span></button>
+  </div>
+</section>
