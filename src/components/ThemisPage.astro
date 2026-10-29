@@ -1,5 +1,6 @@
 ---
 import PromptPanel from './PromptPanel.astro';
+import CopyIcon from './CopyIcon.astro';
 import SectionHeading from './SectionHeading.astro';
 import DisclosureIcon from './DisclosureIcon.astro';
 import { heroBackgroundScript } from '../lib/hero-background';
@@ -105,7 +106,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       </div>
     </header>
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-content"><span class="eyebrow">{t("ΑΓΩΓΕΣ & ΑΣΦΑΛΙΣΤΙΚΑ ΜΕΤΡΑ")}</span><h1 id="hero-title">{t("Η υπόθεσή σου.")}<br><em>{t("Μεθοδικά, από την αρχή.")}</em></h1><p class="hero-copy">{t("Μια ομάδα ειδικών ρόλων για την έρευνα, τις σωστές ερωτήσεις και τη σύνταξη. Αντέγραψε το prompt και ξεκίνα με τη Θέμις στο ChatGPT.")}</p><div class="hero-actions"><button class="button primary" data-copy="start">{t("Αντιγραφή βασικού prompt")} <span aria-hidden="true">↗</span></button><a class="text-link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">{t("Άνοιγμα ChatGPT ↗")}</a></div></div>
+      <div class="hero-content"><span class="eyebrow">{t("ΑΓΩΓΕΣ & ΑΣΦΑΛΙΣΤΙΚΑ ΜΕΤΡΑ")}</span><h1 id="hero-title">{t("Η υπόθεσή σου.")}<br><em>{t("Μεθοδικά, από την αρχή.")}</em></h1><p class="hero-copy">{t("Μια ομάδα ειδικών ρόλων για την έρευνα, τις σωστές ερωτήσεις και τη σύνταξη. Αντέγραψε το prompt και ξεκίνα με τη Θέμις στο ChatGPT.")}</p><div class="hero-actions"><button class="button primary" data-copy="start">{t("Αντιγραφή βασικού prompt")} <CopyIcon /></button><a class="text-link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">{t("Άνοιγμα ChatGPT ↗")}</a></div></div>
     <div class="scope-strip"><span><b aria-hidden="true">↳</b>{t("Ελλάδα · πολλαπλά αντικείμενα")}</span><span><b aria-hidden="true">↳</b>{t("Ερωτήσεις πριν από τη σύνταξη")}</span><span><b aria-hidden="true">↳</b>{t("Πλήρες κείμενο χωρίς placeholders")}</span></div>
     </section>
     </div>
@@ -125,7 +126,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       <noscript><p class="noscript">{t("Η JavaScript είναι απενεργοποιημένη. Αντέγραψε χειροκίνητα το βασικό prompt από το πλαίσιο ή κατέβασε")} <a href={archiveFilename} download={archiveFilename}>{t("το πακέτο ZIP με ξεχωριστά αρχεία Markdown")}</a>.</p></noscript>
       <div class="library"><div class="tabs" role="tablist" aria-label={t("Επιλογή prompt")}>{prompts.map((prompt, index) => (
         <button class="tab" id={`tab-${prompt.id}`} role="tab" aria-selected={index === 0 ? 'true' : 'false'} aria-controls={`panel-${prompt.id}`} tabindex={index === 0 ? 0 : -1} data-tab={prompt.id}>{prompt.label}</button>
-      ))}</div>{prompts.map((prompt, index) => <PromptPanel prompt={prompt} index={index} language={language} />)}<div class="library-actions"><button class="button primary" id="copy-selected">{t("Αντιγραφή αυτού του prompt")} <span aria-hidden="true">↗</span></button><a class="download" href={archiveFilename} download={archiveFilename}><span aria-hidden="true">↓</span> {t("Λήψη όλων σε .zip")}</a></div></div>
+      ))}</div>{prompts.map((prompt, index) => <PromptPanel prompt={prompt} index={index} language={language} />)}<div class="library-actions"><button class="button primary" id="copy-selected">{t("Αντιγραφή αυτού του prompt")} <CopyIcon /></button><a class="download" href={archiveFilename} download={archiveFilename}><span aria-hidden="true">↓</span> {t("Λήψη όλων σε .zip")}</a></div></div>
       <p class="library-help">{t("Για δεύτερο έλεγχο: άνοιξε νέα συνομιλία και δώσε το αντίστοιχο prompt, το σχέδιο και τα κρίσιμα αρχεία. Δεν μεταφέρονται αυτόματα στοιχεία από άλλο chat. Για συνέχεια σε νέο chat, δώσε ξανά το βασικό prompt μαζί με τον εξαγόμενο φάκελο.")}</p>
     </section>
     <section class="section" id="team" aria-labelledby="team-title">
