@@ -22,6 +22,8 @@ The site is a prompt library. It does not run AI models or automatically send in
 
 Astro renders the page and Markdown downloads at build time. Cloudflare Workers Static Assets serves the generated files. The site needs no SSR adapter, persistent server, database, or runtime secrets.
 
+The taller hero uses the supplied React Bits PatternWaves shaders, adapted to Astro with OGL in the site’s cream and green palette. The background is bundled into the HTML at build time, pauses off screen, respects reduced motion, and falls back to a static background if WebGL is unavailable.
+
 Wrangler is installed locally and pinned in the npm lockfile for reproducible deployments.
 
 ## Local development
@@ -46,10 +48,13 @@ The generated `dist/index.html` includes its styles, JavaScript, and prompt text
 ```text
 src/
   components/PromptPanel.astro   Accessible prompt panels
+  components/SectionHeading.astro Section descriptions and icon/title rows
   components/ThemisPage.astro  Shared bilingual page, styles, and interactions
   content/prompts/*.md          Canonical Greek prompt text
   content/prompts/en/*.md       Canonical English prompt text
   lib/i18n.ts                   UI translations
+  lib/hero-background.ts        Build-time background bundling
+  scripts/pattern-waves.js       Adapted WebGL wave background
   lib/prompts.ts                Prompt metadata and bundle generation
   pages/index.astro             Greek page
   pages/en/index.astro          English page
@@ -59,9 +64,13 @@ src/
   pages/themis-prompts.md.ts    Combined static Markdown download
 public/
   _headers                     Static response headers
+  favicon.svg                  Cream and green Θ favicon
+  favicon-32.png                PNG favicon fallback
+  apple-touch-icon.png          Home-screen icon
 astro.config.mjs               Static Astro build configuration
 wrangler.jsonc                 Cloudflare Worker and asset configuration
-verify.cjs                     Playwright verification
+verify.cjs                     Bilingual interaction verification
+verify-effects.cjs             Animation lifecycle and fallback checks
 ```
 
 ## Checks
@@ -74,7 +83,9 @@ npm run deploy:dry-run
 
 `npm test` builds both languages and runs Playwright against their generated HTML. It checks canonical prompt text, all tabs and copy actions, keyboard navigation, expand/collapse, Markdown downloads, clipboard fallbacks, content without JavaScript, safe external links, runtime errors, layouts at four viewport widths, complete English UI coverage, and language switching with and without JavaScript.
 
-The test suite uses an installed Google Chrome by default. To use another Chromium executable, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Optional screenshots can be enabled with `QA_SCREENSHOT_DIR`.
+The effect checks verify rendered frames, off-screen pausing, reduced motion, page-cache cleanup, and usable controls when WebGL is unavailable.
+
+The test suite uses an installed Google Chrome with WebGL 2 support by default. To use another Chromium executable, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Optional screenshots can be enabled with `QA_SCREENSHOT_DIR`.
 
 To test an already running local or deployed site:
 
@@ -129,8 +140,8 @@ Model names, reasoning settings, tools, and availability can differ by account a
 
 ## License
 
-[WTFPL 2.0](LICENSE) — do whatever you want with this project, including its source code and prompts.
+The project’s original code and prompts use [WTFPL 2.0](LICENSE) — do whatever you want with them. Third-party material retains its original license.
 
-The GitHub mark is from Primer Octicons and retains its [MIT license](public/third-party-notices.txt).
+The GitHub mark is from Primer Octicons (MIT). The supplied PatternWaves background is adapted from React Bits (MIT + Commons Clause) and uses OGL (Unlicense). See the [third-party notices](public/third-party-notices.txt).
 
 The header and footer link to the GitHub repository. The page makes no background requests to GitHub.

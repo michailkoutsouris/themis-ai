@@ -11,7 +11,7 @@
     "build": "astro build",
     "check": "astro check",
     "preview": "npm run build && wrangler dev",
-    "test": "npm run build && node verify.cjs",
+    "test": "npm run build && node verify.cjs && node verify-effects.cjs",
     "deploy": "npm run check && npm run build && wrangler deploy",
     "deploy:dry-run": "npm run check && npm run build && wrangler deploy --dry-run"
   },
@@ -19,9 +19,13 @@
     "@astrojs/check": "0.9.12",
     "@types/node": "26.6.6",
     "astro": "7.4.4",
+    "esbuild": "0.28.2",
     "playwright": "1.64.1",
     "typescript": "6.0.3",
     "wrangler": "4.155.0"
   },
-  "license": "WTFPL"
+  "license": "WTFPL",
+  "dependencies": {
+    "ogl": "1.0.11"
+  }
 }
