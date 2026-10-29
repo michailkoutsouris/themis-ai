@@ -45,24 +45,25 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   assert.equal(await page.locator('.seal, .scope-art').count(), 0);
   assert.equal(await page.locator('.repo-link').getAttribute('href'), 'https://github.com/michailkoutsouris/themis-ai');
   assert.equal(await page.locator('.license-note a').first().getAttribute('href'), 'https://github.com/michailkoutsouris/themis-ai/blob/main/LICENSE');
-  // The note stays at the viewport bottom as the sticky desktop rail scrolls.
-  for (const height of [600, 1000]) {
-    await page.setViewportSize({ width: 1440, height });
-    for (const scrollY of [0, 900]) {
-      await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), scrollY);
-      const geometry = await page.locator('.rail').evaluate(rail => ({
-        top: rail.getBoundingClientRect().top,
-        bottom: rail.getBoundingClientRect().bottom,
-        noteBottom: rail.querySelector('.rail-note').getBoundingClientRect().bottom,
-        padding: parseFloat(getComputedStyle(rail).paddingBottom),
-        viewport: innerHeight,
-      }));
-      assert.ok(Math.abs(geometry.top) < 1, 'rail sticks to viewport top');
-      assert.ok(Math.abs(geometry.bottom - geometry.viewport) < 1, 'rail fills viewport height');
-      assert.ok(Math.abs(geometry.noteBottom + geometry.padding - geometry.viewport) < 1, 'note aligns with viewport bottom');
-    }
+  assert.equal(await page.locator('aside, .rail').count(), 0, 'sidebar is removed');
+  // The first screen adapts to the actual navbar height and the viewport.
+  for (const [width, height, fitsViewport] of [[1440, 700, true], [1440, 1000, true], [1440, 1440, true], [390, 844, true], [320, 568, false], [844, 390, false]]) {
+    await page.setViewportSize({ width, height });
+    const geometry = await page.evaluate(() => {
+      const navbar = document.querySelector('.topline').getBoundingClientRect();
+      const hero = document.querySelector('.hero').getBoundingClientRect();
+      const brand = document.querySelector('.brand').getBoundingClientRect();
+      const tagline = document.querySelector('.brand-sub').getBoundingClientRect();
+      return { navbarBottom: navbar.bottom, heroTop: hero.top, heroBottom: hero.bottom, heroHeight: hero.height, viewport: innerHeight, sameRow: Math.min(brand.bottom, tagline.bottom) > Math.max(brand.top, tagline.top), divider: getComputedStyle(document.querySelector('.brand-sub')).borderInlineStartWidth };
+    });
+    assert.ok(Math.abs(geometry.heroTop - geometry.navbarBottom) < 1, 'hero follows the actual navbar height');
+    assert.ok(geometry.heroHeight >= 520, 'hero keeps its minimum height');
+    assert.ok(geometry.heroBottom >= geometry.viewport - 1, 'first screen fills the viewport');
+    if (fitsViewport) assert.ok(Math.abs(geometry.heroBottom - geometry.viewport) < 1, 'navbar and hero fill exactly one viewport');
+    assert.equal(geometry.sameRow, true, 'wordmark and description share a row');
+    assert.equal(geometry.divider, '1px');
   }
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.setViewportSize({ width: 1440, height: 1000 });
   const prompts = await page.locator('#prompt-data').evaluate(el => JSON.parse(el.textContent));
   for (const prompt of prompts) {
     const canonical = fs.readFileSync(path.join(__dirname,'src/content/prompts',directory,prompt.filename),'utf8').trim()+'\n';
@@ -158,5 +159,5 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   } finally {
     await browser.close();
   }
-  console.log('PASS: both languages, sticky sidebar geometry, repository/license links, and no runtime errors.');
+  console.log('PASS: both languages, viewport-filling hero and navbar geometry, repository/license links, and no runtime errors.');
 })().catch(error => {console.error(error);process.exit(1);});

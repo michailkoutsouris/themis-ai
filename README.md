@@ -22,7 +22,9 @@ The site is a prompt library. It does not run AI models or automatically send in
 
 Astro renders the page and Markdown downloads at build time. Cloudflare Workers Static Assets serves the generated files. The site needs no SSR adapter, persistent server, database, or runtime secrets.
 
-The taller hero uses the supplied React Bits PatternWaves shaders, adapted to Astro with OGL in the site’s cream and green palette. The background is bundled into the HTML at build time, pauses off screen, respects reduced motion, and falls back to a static background if WebGL is unavailable.
+The wordmark and tagline share a horizontal navbar with a vertical divider. The hero fills the viewport below the navbar, with a 520px minimum and room to grow when its content needs more space.
+
+The hero uses the supplied React Bits PatternWaves shaders, adapted to Astro with OGL in the site’s cream and green palette. The background is bundled into the HTML at build time, pauses off screen, respects reduced motion, and falls back to a static background if WebGL is unavailable.
 
 Wrangler is installed locally and pinned in the npm lockfile for reproducible deployments.
 
