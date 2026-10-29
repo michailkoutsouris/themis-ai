@@ -10,7 +10,7 @@ Themis provides four reusable prompts for working with ChatGPT: starting a case,
 
 - Four complete prompts in Greek and English, with accessible tabs and keyboard navigation.
 - An ΕΛ / EN switch for the whole interface, prompt text, and downloads; it also works without JavaScript.
-- Copy individual prompts, with clipboard and manual-selection fallbacks.
+- Copy individual prompts, with animated success feedback, reduced-motion support, and clipboard/manual-selection fallbacks.
 - Download a ZIP archive containing four separate Markdown prompt files.
 - Responsive layout and readable content with JavaScript disabled.
 - Self-contained HTML for offline reading after building.
@@ -94,6 +94,7 @@ astro.config.mjs                      Static Astro build configuration
 wrangler.jsonc                        Cloudflare Worker and asset configuration
 verify.cjs                            Bilingual interaction and ZIP verification
 verify-effects.cjs                    Animation lifecycle and fallback checks
+verify-copy.cjs                       Copy feedback and reduced-motion checks
 ```
 
 ## Checks
@@ -106,7 +107,7 @@ npm run deploy:dry-run
 
 `npm test` builds both languages and runs Playwright against their generated HTML. It checks canonical prompt text, all tabs and copy actions, keyboard navigation, expand/collapse icons, all four FAQ toggles, ZIP downloads and their canonical file contents, clipboard fallbacks, content without JavaScript, safe external links, runtime errors, layouts at four viewport widths, complete English UI coverage, and language switching with and without JavaScript.
 
-The effect checks verify rendered frames, off-screen pausing, reduced motion, page-cache cleanup, and usable controls when WebGL is unavailable.
+The effect checks verify rendered frames, off-screen pausing, reduced motion, page-cache cleanup, and usable controls when WebGL is unavailable. Copy-feedback checks cover pending clipboard writes, success and reset states, repeated clicks, keyboard use, failed copies, and reduced motion in both languages.
 
 The test suite uses an installed Google Chrome with WebGL 2 support by default. To use another Chromium executable, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Optional screenshots can be enabled with `QA_SCREENSHOT_DIR`.
 

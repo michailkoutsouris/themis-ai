@@ -1,0 +1,57 @@
+---
+import CopyIcon from './CopyIcon.astro';
+
+interface Props { label: string; copiedLabel: string; id?: string; promptId?: string; }
+const { label, copiedLabel, id, promptId } = Astro.props;
+const sparks = [
+  [22, -31, 35], [35, -7, -25], [23, 27, 90],
+  [-11, 32, 135], [-29, -15, 15], [-2, -37, 160],
+];
+---
+<button class="button primary copy-button" id={id} data-copy={promptId}>
+  <span class="copy-label">
+    <span class="copy-label-ready">{label}</span>
+    <span class="copy-label-done">{copiedLabel}</span>
+  </span>
+  <span class="copy-symbol" aria-hidden="true">
+    <CopyIcon />
+    <svg class="copy-check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path pathLength="1" d="m5 12 4 4L19 6" /></svg>
+  </span>
+  <span class="copy-effects" aria-hidden="true"><span class="copy-sheen"></span><span class="copy-ripple"></span></span>
+  <span class="copy-sparks" aria-hidden="true">{sparks.map(([x, y, turn], index) => <span class="copy-spark" style={`--spark-x:${x}px;--spark-y:${y}px;--spark-turn:${turn}deg;--spark-delay:${index * 18}ms`}></span>)}</span>
+</button>
+<style is:global>
+  .button.copy-button{position:relative;isolation:isolate;overflow:visible;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,background .25s}
+  .button.primary.copy-button:hover{transform:translateY(-2px);box-shadow:0 8px 22px #173f3526}
+  .button.primary.copy-button:active{transform:translateY(1px) scale(.975);box-shadow:0 2px 6px #173f351a}
+  .copy-label,.copy-symbol{display:grid;position:relative;z-index:1}
+  .copy-label>span{grid-area:1/1;transition:opacity .2s,transform .35s cubic-bezier(.2,.8,.2,1),visibility .2s}
+  .copy-label-done{visibility:hidden;opacity:0;transform:translateY(9px)}
+  .copy-symbol{width:18px;height:18px;flex:none}
+  .copy-symbol>svg{grid-area:1/1;transition:opacity .2s,transform .4s cubic-bezier(.2,.8,.2,1)}
+  .copy-sheet-front,.copy-sheet-back{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .copy-button:is(:hover,:focus-visible) .copy-sheet-front{transform:translate(1px,1px)}
+  .copy-button:is(:hover,:focus-visible) .copy-sheet-back{transform:translate(-1px,-1px)}
+  .copy-check{opacity:0;transform:rotate(-35deg) scale(.6)}
+  .copy-check path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .4s ease .12s}
+  .copy-effects{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;z-index:0}
+  .copy-sheen{position:absolute;inset:-1px auto -1px 0;width:45%;background:linear-gradient(90deg,transparent,#fffef932,transparent);transform:translateX(-150%) skewX(-20deg)}
+  .copy-button:is(:hover,:focus-visible) .copy-sheen{animation:copy-shimmer .75s ease both}
+  .copy-ripple{position:absolute;left:var(--copy-x,50%);top:var(--copy-y,50%);width:20px;height:20px;border-radius:50%;background:#fffef947;opacity:0;transform:translate(-50%,-50%) scale(0)}
+  .copy-sparks{position:absolute;inset:0;pointer-events:none}
+  .copy-spark{position:absolute;right:27px;top:50%;width:3px;height:7px;border-radius:2px;background:var(--orange);opacity:0}
+  .copy-spark:nth-child(even){background:#a9bd91}
+  .copy-button[data-copy-state=success]{background:#255446;animation:copy-celebrate .68s cubic-bezier(.2,.8,.2,1) both}
+  .copy-button[data-copy-state=success] .copy-label-ready{visibility:hidden;opacity:0;transform:translateY(-9px)}
+  .copy-button[data-copy-state=success] .copy-label-done{visibility:visible;opacity:1;transform:translateY(0)}
+  .copy-button[data-copy-state=success] .copy-icon{opacity:0;transform:rotate(25deg) scale(.55)}
+  .copy-button[data-copy-state=success] .copy-check{opacity:1;transform:rotate(0) scale(1)}
+  .copy-button[data-copy-state=success] .copy-check path{stroke-dashoffset:0}
+  .copy-button[data-copy-state=success] .copy-ripple{animation:copy-ripple .8s ease-out both}
+  .copy-button[data-copy-state=success] .copy-spark{animation:copy-spark .7s cubic-bezier(.16,.7,.3,1) var(--spark-delay) both}
+  @keyframes copy-shimmer{to{transform:translateX(370%) skewX(-20deg)}}
+  @keyframes copy-celebrate{0%{transform:scale(.975);box-shadow:0 0 0 0 #ba59384d}35%{transform:scale(1.035);box-shadow:0 0 0 5px #ba593826}100%{transform:scale(1);box-shadow:0 0 0 13px #ba593800}}
+  @keyframes copy-ripple{0%{opacity:.65;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(30)}}
+  @keyframes copy-spark{0%{opacity:0;transform:translate(0,-50%) rotate(0) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--spark-x),var(--spark-y)) rotate(var(--spark-turn)) scale(.15)}}
+  @media(prefers-reduced-motion:reduce){.button.copy-button{animation:none!important;transition:none!important;transform:none!important}.copy-button *{animation:none!important;transition:none!important}.copy-effects,.copy-sparks{display:none}}
+</style>

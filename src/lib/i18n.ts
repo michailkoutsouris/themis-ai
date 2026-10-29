@@ -17,6 +17,7 @@ const english = {
   "Η υπόθεσή σου.": "Your case.",
   "Μεθοδικά, από την αρχή.": "Methodically, from the start.",
   "Μια ομάδα ειδικών ρόλων για την έρευνα, τις σωστές ερωτήσεις και τη σύνταξη. Αντέγραψε το prompt και ξεκίνα με τη Θέμις στο ChatGPT.": "A set of specialist roles for research, the right questions, and drafting. Copy the prompt and get started with Themis in ChatGPT.",
+  "Αντιγράφηκε!": "Copied!",
   "Αντιγραφή βασικού prompt": "Copy the main prompt",
   "Άνοιγμα ChatGPT ↗": "Open ChatGPT ↗",
   "Ελλάδα · πολλαπλά αντικείμενα": "Greece · multiple areas of law",

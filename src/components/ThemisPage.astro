@@ -1,6 +1,6 @@
 ---
 import PromptPanel from './PromptPanel.astro';
-import CopyIcon from './CopyIcon.astro';
+import CopyButton from './CopyButton.astro';
 import SectionHeading from './SectionHeading.astro';
 import DisclosureIcon from './DisclosureIcon.astro';
 import { heroBackgroundScript } from '../lib/hero-background';
@@ -106,7 +106,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       </div>
     </header>
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-content"><span class="eyebrow">{t("ΑΓΩΓΕΣ & ΑΣΦΑΛΙΣΤΙΚΑ ΜΕΤΡΑ")}</span><h1 id="hero-title">{t("Η υπόθεσή σου.")}<br><em>{t("Μεθοδικά, από την αρχή.")}</em></h1><p class="hero-copy">{t("Μια ομάδα ειδικών ρόλων για την έρευνα, τις σωστές ερωτήσεις και τη σύνταξη. Αντέγραψε το prompt και ξεκίνα με τη Θέμις στο ChatGPT.")}</p><div class="hero-actions"><button class="button primary" data-copy="start">{t("Αντιγραφή βασικού prompt")} <CopyIcon /></button><a class="text-link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">{t("Άνοιγμα ChatGPT ↗")}</a></div></div>
+      <div class="hero-content"><span class="eyebrow">{t("ΑΓΩΓΕΣ & ΑΣΦΑΛΙΣΤΙΚΑ ΜΕΤΡΑ")}</span><h1 id="hero-title">{t("Η υπόθεσή σου.")}<br><em>{t("Μεθοδικά, από την αρχή.")}</em></h1><p class="hero-copy">{t("Μια ομάδα ειδικών ρόλων για την έρευνα, τις σωστές ερωτήσεις και τη σύνταξη. Αντέγραψε το prompt και ξεκίνα με τη Θέμις στο ChatGPT.")}</p><div class="hero-actions"><CopyButton promptId="start" label={t("Αντιγραφή βασικού prompt")} copiedLabel={t("Αντιγράφηκε!")} /><a class="text-link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">{t("Άνοιγμα ChatGPT ↗")}</a></div></div>
     <div class="scope-strip"><span><b aria-hidden="true">↳</b>{t("Ελλάδα · πολλαπλά αντικείμενα")}</span><span><b aria-hidden="true">↳</b>{t("Ερωτήσεις πριν από τη σύνταξη")}</span><span><b aria-hidden="true">↳</b>{t("Πλήρες κείμενο χωρίς placeholders")}</span></div>
     </section>
     </div>
@@ -126,7 +126,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       <noscript><p class="noscript">{t("Η JavaScript είναι απενεργοποιημένη. Αντέγραψε χειροκίνητα το βασικό prompt από το πλαίσιο ή κατέβασε")} <a href={archiveFilename} download={archiveFilename}>{t("το πακέτο ZIP με ξεχωριστά αρχεία Markdown")}</a>.</p></noscript>
       <div class="library"><div class="tabs" role="tablist" aria-label={t("Επιλογή prompt")}>{prompts.map((prompt, index) => (
         <button class="tab" id={`tab-${prompt.id}`} role="tab" aria-selected={index === 0 ? 'true' : 'false'} aria-controls={`panel-${prompt.id}`} tabindex={index === 0 ? 0 : -1} data-tab={prompt.id}>{prompt.label}</button>
-      ))}</div>{prompts.map((prompt, index) => <PromptPanel prompt={prompt} index={index} language={language} />)}<div class="library-actions"><button class="button primary" id="copy-selected">{t("Αντιγραφή αυτού του prompt")} <CopyIcon /></button><a class="download" href={archiveFilename} download={archiveFilename}><span aria-hidden="true">↓</span> {t("Λήψη όλων σε .zip")}</a></div></div>
+      ))}</div>{prompts.map((prompt, index) => <PromptPanel prompt={prompt} index={index} language={language} />)}<div class="library-actions"><CopyButton id="copy-selected" label={t("Αντιγραφή αυτού του prompt")} copiedLabel={t("Αντιγράφηκε!")} /><a class="download" href={archiveFilename} download={archiveFilename}><span aria-hidden="true">↓</span> {t("Λήψη όλων σε .zip")}</a></div></div>
       <p class="library-help">{t("Για δεύτερο έλεγχο: άνοιξε νέα συνομιλία και δώσε το αντίστοιχο prompt, το σχέδιο και τα κρίσιμα αρχεία. Δεν μεταφέρονται αυτόματα στοιχεία από άλλο chat. Για συνέχεια σε νέο chat, δώσε ξανά το βασικό prompt μαζί με τον εξαγόμενο φάκελο.")}</p>
     </section>
     <section class="section" id="team" aria-labelledby="team-title">
@@ -203,9 +203,27 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       if (active && focus) tab.focus();
     }
   }
-  async function copy(id, button) {
+  const copyResetTimers = new WeakMap();
+  function showCopySuccess(button) {
+    button.dataset.copyState = 'success';
+    // Rewind retained success animations so rapid repeat copies celebrate again.
+    for (const animation of button.getAnimations({subtree:true})) {
+      if (animation.animationName && animation.animationName.startsWith('copy-')) animation.currentTime = 0;
+    }
+    copyResetTimers.set(button, setTimeout(() => {
+      delete button.dataset.copyState;
+      copyResetTimers.delete(button);
+    }, 2200));
+  }
+  async function copy(id, button, event) {
     const prompt = byId.get(id);
     if (!prompt) return;
+    clearTimeout(copyResetTimers.get(button));
+    const bounds = button.getBoundingClientRect();
+    button.style.setProperty('--copy-x', event.detail ? (event.clientX - bounds.left) + 'px' : '50%');
+    button.style.setProperty('--copy-y', event.detail ? (event.clientY - bounds.top) + 'px' : '50%');
+    button.dataset.copyState = 'pending';
+    button.setAttribute('aria-busy', 'true');
     button.disabled = true;
     try {
       let copied = false;
@@ -226,8 +244,13 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
         }
       }
       button.focus({preventScroll:true});
+      showCopySuccess(button);
       notify(messages.copiedPrefix + ' ' + prompt.label + '. ' + messages.paste);
-    } finally { button.disabled = false; }
+    } finally {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      if (button.dataset.copyState === 'pending') delete button.dataset.copyState;
+    }
   }
   for (const tab of tabs) {
     tab.addEventListener('click', () => selectTab(tab.dataset.tab));
@@ -241,8 +264,8 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       if (next !== undefined) { event.preventDefault(); selectTab(tabs[next].dataset.tab, true); }
     });
   }
-  for (const button of document.querySelectorAll('[data-copy]')) button.addEventListener('click', () => copy(button.dataset.copy, button));
-  document.getElementById('copy-selected').addEventListener('click', event => copy(selected, event.currentTarget));
+  for (const button of document.querySelectorAll('[data-copy]')) button.addEventListener('click', event => copy(button.dataset.copy, button, event));
+  document.getElementById('copy-selected').addEventListener('click', event => copy(selected, event.currentTarget, event));
   for (const button of document.querySelectorAll('[data-expand]')) {
     button.addEventListener('click', () => {
       const field = document.getElementById('text-' + button.dataset.expand);

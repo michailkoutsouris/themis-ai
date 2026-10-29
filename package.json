@@ -11,7 +11,7 @@
     "build": "astro build",
     "check": "astro check",
     "preview": "npm run build && wrangler dev",
-    "test": "npm run build && node verify.cjs && node verify-effects.cjs",
+    "test": "npm run build && node verify.cjs && node verify-effects.cjs && node verify-copy.cjs",
     "deploy": "npm run check && npm run build && wrangler deploy",
     "deploy:dry-run": "npm run check && npm run build && wrangler deploy --dry-run"
   },
