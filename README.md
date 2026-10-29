@@ -117,3 +117,9 @@ Prompt edition: **1.0 · 29 October 2026**.
 The prompts are a starting point for research and drafting. Technical tests validate the website; they do not validate legal accuracy, filing requirements, or model performance. No live legal case has been evaluated as part of this project, and no legal certification or guarantee of court outcomes is provided.
 
 Model names, reasoning settings, tools, and availability can differ by account and workspace. The prompts cannot enable tools or select a model themselves. External services and legal sources have their own terms and access requirements.
+
+## License
+
+[WTFPL 2.0](LICENSE) — do whatever you want with this project, including its source code and prompts.
+
+The header links to the GitHub repository and loads its current star and fork counts from GitHub's public API. If the request fails or is rate limited, the counts display `—` and the links remain available. No prompt or case information is sent to GitHub.

@@ -14,6 +14,7 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
   });
   try {
   const context = await browser.newContext({viewport: {width:1440,height:1000}, acceptDownloads:true});
+  await context.route('https://api.github.com/repos/michailkoutsouris/themis-ai', route => route.fulfill({ json: { stargazers_count: 123, forks_count: 7 } }));
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
   const errors = [];
@@ -24,6 +25,30 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
   });
   await page.goto(targetURL);
   assert.match(await page.title(), /Θέμις/);
+  assert.equal(await page.locator('.brand-name').textContent(), 'Θέμις.');
+  assert.equal(await page.locator('.seal, .scope-art').count(), 0);
+  await page.waitForFunction(() => document.querySelector('[data-repo-stars]').textContent === '123');
+  assert.equal(await page.locator('[data-repo-forks]').textContent(), '7');
+  assert.equal(await page.locator('.repo-link').getAttribute('href'), 'https://github.com/michailkoutsouris/themis-ai');
+  assert.equal(await page.locator('.license-note a').first().getAttribute('href'), 'https://github.com/michailkoutsouris/themis-ai/blob/main/LICENSE');
+  // The note stays at the viewport bottom as the sticky desktop rail scrolls.
+  for (const height of [600, 1000]) {
+    await page.setViewportSize({ width: 1440, height });
+    for (const scrollY of [0, 900]) {
+      await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), scrollY);
+      const geometry = await page.locator('.rail').evaluate(rail => ({
+        top: rail.getBoundingClientRect().top,
+        bottom: rail.getBoundingClientRect().bottom,
+        noteBottom: rail.querySelector('.rail-note').getBoundingClientRect().bottom,
+        padding: parseFloat(getComputedStyle(rail).paddingBottom),
+        viewport: innerHeight,
+      }));
+      assert.ok(Math.abs(geometry.top) < 1, 'rail sticks to viewport top');
+      assert.ok(Math.abs(geometry.bottom - geometry.viewport) < 1, 'rail fills viewport height');
+      assert.ok(Math.abs(geometry.noteBottom + geometry.padding - geometry.viewport) < 1, 'note aligns with viewport bottom');
+    }
+  }
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   const prompts = await page.locator('#prompt-data').evaluate(el => JSON.parse(el.textContent));
   for (const prompt of prompts) {
     const canonical = fs.readFileSync(path.join(__dirname,'src/content/prompts',prompt.filename),'utf8').trim()+'\n';
@@ -87,7 +112,20 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
   await fallback.goto(targetURL);
   assert.equal(await fallback.locator('#text-start').inputValue(),prompts[0].content);
   assert.ok(await fallback.locator('noscript').isVisible());
+  assert.equal(await fallback.locator('[data-repo-stars]').textContent(), '—');
   await noJS.close();
+  const rateLimited = await browser.newContext();
+  await rateLimited.route('https://api.github.com/repos/michailkoutsouris/themis-ai', route => route.fulfill({ status: 429, json: { message: 'Rate limited' } }));
+  const limitedPage = await rateLimited.newPage();
+  const failedStats = limitedPage.waitForResponse('https://api.github.com/repos/michailkoutsouris/themis-ai');
+  await limitedPage.goto(targetURL);
+  await failedStats;
+  assert.equal(await limitedPage.locator('[data-repo-stars]').textContent(), '—');
+  assert.equal(await limitedPage.locator('[data-repo-forks]').textContent(), '—');
+  assert.equal(await limitedPage.locator('.repo-link').isVisible(), true);
+  await limitedPage.locator('#tab-review').click();
+  assert.equal(await limitedPage.locator('#tab-review').getAttribute('aria-selected'), 'true');
+  await rateLimited.close();
   if (process.env.TEST_BASE_URL) {
     for (const prompt of prompts) {
       const response = await fetch(new URL('/prompts/' + prompt.filename, targetURL));
@@ -103,5 +141,5 @@ const targetURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname
   } finally {
     await browser.close();
   }
-  console.log('PASS: canonical prompts, 4 tabs/copy actions, hero copy, keyboard, expand/collapse, Markdown download, clipboard fallbacks, no-JS, 4 responsive widths, safe links, no JS errors.');
+  console.log('PASS: canonical prompts, 4 tabs/copy actions, hero copy, keyboard, expand/collapse, Markdown download, clipboard fallbacks, no-JS, 4 responsive widths, safe links, no JS errors, sticky sidebar geometry, GitHub stats success/rate-limit fallback, repository/license links.');
 })().catch(error => {console.error(error);process.exit(1);});

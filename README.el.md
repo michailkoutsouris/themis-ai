@@ -69,3 +69,9 @@ TEST_BASE_URL=https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev node verify.cjs
 - https://learn.chatgpt.com/docs/build-plugins
 - https://learn.chatgpt.com/docs/migrate-custom-gpts
 - https://developers.openai.com/api/docs/models/gpt-6-astra
+
+## Άδεια και αποθετήριο
+
+[WTFPL 2.0](LICENSE) — κάνε ό,τι θέλεις με αυτό το έργο, τον κώδικα και τα prompts.
+
+Η κεφαλίδα συνδέει το αποθετήριο GitHub και φορτώνει τους αριθμούς stars και forks μέσω του δημόσιου API του GitHub. Αν δεν υπάρχει σύνδεση ή το API δεν είναι διαθέσιμο, εμφανίζεται `—` και οι σύνδεσμοι παραμένουν διαθέσιμοι. Δεν αποστέλλεται κείμενο prompt ή πληροφορία υπόθεσης στο GitHub.
