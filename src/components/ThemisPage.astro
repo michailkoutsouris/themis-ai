@@ -83,8 +83,22 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
     @supports(text-box:trim-both ex alphabetic){.brand-name{text-box:trim-both ex alphabetic}.brand-sub{text-box:trim-both cap alphabetic;transform:none}}
     .hero{position:relative;z-index:1;display:grid;grid-template-rows:1fr auto;gap:48px;min-width:0;min-height:520px;padding:48px var(--page-gutter) 24px}.hero-content{align-self:center}.hero .scope-strip{align-self:end;border-bottom:0;padding:20px 0 0}
     @media(max-width:800px){.brand-name{font-size:30px}.brand-lockup{gap:16px}.brand-sub{padding-inline-start:16px;letter-spacing:1px}.topline{padding-block:19px}.hero{gap:40px;padding-block:40px 24px}}
-    @media(max-width:560px){.topline{gap:15px;padding-block:18px}.brand-lockup{width:100%;gap:16px}.brand-sub{font-size:11px;letter-spacing:.9px;padding-inline-start:16px}.top-actions{margin-inline-start:auto}.hero{gap:36px;padding-block:36px 20px}}
+    @media(max-width:560px){.topline{gap:15px;padding-block:18px}.brand-lockup{gap:16px}.brand-sub{font-size:11px;letter-spacing:.9px;padding-inline-start:16px}.top-actions{margin-inline-start:auto}.hero{gap:36px;padding-block:36px 20px}}
     @media(max-width:380px){.brand-name{font-size:28px}.brand-lockup{gap:14px}.brand-sub{padding-inline-start:14px}}
+    /* Keep compact controls to one language destination and one GitHub mark. */
+    .topline.is-compact{flex-wrap:nowrap;gap:12px;--current-language-display:none;--repo-label-display:none;--control-size:40px;--actions-gap:8px;--brand-flex:1;--slogan-wrap:normal;--language-border:#c8cebf;--language-background:var(--green-light)}
+    .top-actions{flex:none;flex-wrap:nowrap;gap:var(--actions-gap,18px)}
+    .language-switch a{min-width:var(--control-size,34px);min-height:var(--control-size,32px)}
+    .language-switch a[aria-current=page]{display:var(--current-language-display,inline-flex)}
+    .language-switch a:not([aria-current]){border-color:var(--language-border,transparent);background:var(--language-background,transparent)}
+    .repo-link span{display:var(--repo-label-display,inline)}
+    .topline .repo-link{justify-content:center;min-width:var(--control-size,auto);min-height:var(--control-size,28px)}
+    .brand-lockup{flex:var(--brand-flex,0) 1 auto}.brand-sub{white-space:var(--slogan-wrap,nowrap)}
+    .scope-strip.is-stacked{flex-direction:column;align-items:flex-start;flex-wrap:nowrap}
+    .scope-strip span{white-space:nowrap}
+    @media(max-width:800px){.topline{flex-wrap:nowrap;gap:12px;--current-language-display:none;--repo-label-display:none;--control-size:40px;--actions-gap:8px;--brand-flex:1;--slogan-wrap:normal;--language-border:#c8cebf;--language-background:var(--green-light)}}
+    /* Keep the same usable layout without JavaScript on small screens. */
+    @media(max-width:560px){.scope-strip{flex-direction:column;align-items:flex-start}}
     @media print{.main{padding:0}.landing{display:block;min-height:0;margin:0}.topline{display:none}.hero{min-height:0;padding:20px 0}}
   </style>
 </head>
@@ -105,7 +119,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
         <a href={language === "el" ? "en/index.html" : "index.html"} lang="en" hreflang="en" aria-label="English" title="English" aria-current={language === "en" ? "page" : undefined} data-language-link>EN</a>
       </nav>
       <div class="repo-meta" aria-label={t("Αποθετήριο GitHub")}>
-        <a class="repo-link" href={repositoryURL} target="_blank" rel="noopener noreferrer"><!-- GitHub mark: Primer Octicons (MIT); see /third-party-notices.txt. --><svg class="github-icon" viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656" /></svg><span>GitHub ↗</span></a>
+        <a class="repo-link" aria-label="GitHub" href={repositoryURL} target="_blank" rel="noopener noreferrer"><!-- GitHub mark: Primer Octicons (MIT); see /third-party-notices.txt. --><svg class="github-icon" viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656" /></svg><span>GitHub ↗</span></a>
       </div>
       </div>
     </header>
@@ -184,6 +198,36 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
       link.href = target.href;
     });
   }
+  const navbar = document.querySelector('.topline');
+  const scope = document.querySelector('.scope-strip');
+  function fitHeaderAndLabels() {
+    navbar.classList.remove('is-compact');
+    const brand = navbar.querySelector('.brand-lockup');
+    const actions = navbar.querySelector('.top-actions');
+    const style = getComputedStyle(navbar);
+    const available = navbar.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    navbar.classList.toggle('is-compact', innerWidth <= 800 || brand.scrollWidth + actions.scrollWidth + parseFloat(style.columnGap) > available);
+    const gap = parseFloat(getComputedStyle(scope).columnGap) || 0;
+    const labels = [...scope.children];
+    const required = labels.reduce((width, label) => width + label.scrollWidth, 0) + gap * (labels.length - 1);
+    scope.classList.toggle('is-stacked', required > scope.clientWidth);
+  }
+  fitHeaderAndLabels();
+  if (typeof ResizeObserver === 'function') {
+    const widths = new WeakMap();
+    const observer = new ResizeObserver(entries => {
+      let changed = false;
+      for (const entry of entries) {
+        changed = changed || widths.get(entry.target) !== entry.contentRect.width;
+        widths.set(entry.target, entry.contentRect.width);
+      }
+      if (changed) fitHeaderAndLabels();
+    });
+    observer.observe(navbar);
+    observer.observe(scope);
+  }
+  window.addEventListener('resize', fitHeaderAndLabels);
+  document.fonts?.ready.then(fitHeaderAndLabels);
   const prompts = JSON.parse(document.getElementById('prompt-data').textContent);
   const byId = new Map(prompts.map(prompt => [prompt.id, prompt]));
   const tabs = Array.from(document.querySelectorAll('[data-tab]'));

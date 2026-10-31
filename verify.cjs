@@ -130,6 +130,22 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   for (const width of [320,390,768,1440]) {
     await page.setViewportSize({width,height:1000});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true,'no page overflow at '+width);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const headerLayout = await page.locator('.topline').evaluate(header => {
+      const brand = header.querySelector('.brand-lockup').getBoundingClientRect();
+      const actions = header.querySelector('.top-actions').getBoundingClientRect();
+      return brand.right <= actions.left && Math.min(brand.bottom, actions.bottom) > Math.max(brand.top, actions.top);
+    });
+    assert.equal(headerLayout, true, 'header remains on one row at ' + width);
+    assert.equal(await page.locator('.language-switch a:visible').count(), width <= 800 ? 1 : 2);
+    assert.equal(await page.locator('.repo-link span').isVisible(), width > 800);
+    const labelLayout = await page.locator('.scope-strip').evaluate(strip => {
+      const rects = [...strip.children].map(label => label.getBoundingClientRect());
+      const sameRow = rects.every(rect => Math.abs(rect.top - rects[0].top) < 1);
+      const stacked = rects.every((rect, index) => !index || rect.top >= rects[index - 1].bottom);
+      return sameRow || stacked;
+    });
+    assert.equal(labelLayout, true, 'hero labels all share a row or all stack at ' + width);
     const visibleControls = page.locator('button:visible, a:visible');
     assert.ok(await visibleControls.count()>10);
     if (process.env.QA_SCREENSHOT_DIR && (width===390 || width===1440)) {
