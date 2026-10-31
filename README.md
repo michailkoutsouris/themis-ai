@@ -24,6 +24,8 @@ The site is a prompt library. It does not run AI models or automatically send in
 
 Open the [Greek](https://themis.koutsourismichalis.workers.dev/) or [English](https://themis.koutsourismichalis.workers.dev/en/) page, copy the main prompt, and paste it into a new ChatGPT conversation. Answer its questions before moving to drafting and checks.
 
+**Start in ChatGPT** opens the website using a `?q=` launch message, following the approach used by [React Bits](https://reactbits.dev/text-animations/tech-text). The message asks ChatGPT to read and follow the full language-specific main prompt from its public Markdown URL. It does not put a truncated copy of the legal instructions in the URL. ChatGPT must be able to retrieve the file; if it cannot, the message asks you to paste the complete prompt using the existing copy button. This prefills a launch message rather than the entire main prompt. ChatGPT controls how it handles the query and any sign-in flow.
+
 The tabs appear in this order; use each prompt when its stage applies:
 
 | Tab | Greek label | Use |

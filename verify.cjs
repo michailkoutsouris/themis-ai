@@ -66,6 +66,22 @@ const baseURL = process.env.TEST_BASE_URL || pathToFileURL(path.join(__dirname, 
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   const prompts = await page.locator('#prompt-data').evaluate(el => JSON.parse(el.textContent));
+  const launchLink = page.locator('.hero-actions .text-link');
+  const launchURL = new URL(await launchLink.getAttribute('href'));
+  assert.equal(launchURL.origin, 'https://chatgpt.com');
+  const launchMessage = launchURL.searchParams.get('q');
+  assert.ok(launchMessage && launchMessage.length < 6000, 'launch message fits without truncation');
+  assert.ok(launchMessage.includes(`https://themis.koutsourismichalis.workers.dev/${directory}prompts/themis-main.md`), 'handoff points to the full prompt in the current language');
+  assert.match(launchMessage, language === 'en' ? /ask me to paste/ : /ζήτησέ μου να επικολλήσω/, 'unavailable files require the full prompt, never guessed instructions');
+  assert.equal(fs.readFileSync(path.join(__dirname, 'dist', directory, 'prompts/themis-main.md'), 'utf8'), prompts[0].content, 'handoff Markdown contains the complete canonical prompt');
+  // Verify the real new-tab click without sending anything to ChatGPT.
+  await context.route('https://chatgpt.com/**', route => route.fulfill({ contentType: 'text/html', body: '<title>Handoff test</title>' }));
+  const popupReady = context.waitForEvent('page');
+  await launchLink.click();
+  const popup = await popupReady;
+  await popup.waitForLoadState('domcontentloaded');
+  assert.equal(popup.url(), launchURL.href, 'new tab receives the complete encoded launch message');
+  await popup.close();
   assert.deepEqual(prompts.map(prompt => prompt.id), ['start', 'final', 'handoff', 'review']);
   assert.deepEqual(await page.locator('[role=tab]').evaluateAll(tabs => tabs.map(tab => tab.dataset.tab)), ['start', 'final', 'handoff', 'review']);
   assert.equal(await page.locator('#tab-final').textContent(), language === 'en' ? 'Full Check' : 'Πλήρης Έλεγχος');
