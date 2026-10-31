@@ -21,7 +21,6 @@ const english = {
   "Αντιγραφή βασικού prompt": "Copy the main prompt",
   "Ξεκίνα στο ChatGPT ↗": "Start in ChatGPT ↗",
   "Ανοίγει το ChatGPT με μήνυμα για φόρτωση του πλήρους βασικού prompt.": "Opens ChatGPT with a message to load the complete main prompt.",
-  "Αν το ChatGPT δεν μπορεί να ανοίξει το αρχείο, αντέγραψε και επικόλλησε το βασικό prompt από εδώ.": "If ChatGPT cannot open the file, copy and paste the main prompt from here.",
   "Ελλάδα · πολλαπλά αντικείμενα": "Greece · multiple areas of law",
   "Ερωτήσεις πριν από τη σύνταξη": "Questions before drafting",
   "Πλήρες κείμενο χωρίς placeholders": "Complete text, no placeholders",

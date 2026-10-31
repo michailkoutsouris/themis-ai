@@ -69,7 +69,9 @@
       else if (entry.kind === 'nav') frames = [{ transform: 'translateY(-10px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }];
       else if (entry.kind === 'waves') frames = [{ opacity: 0 }, { opacity: 1 }];
       else frames = [{ transform: 'translateY(24px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }];
-      animate(element, frames, { duration: entry.kind === 'waves' ? 1800 : entry.kind === 'line' ? 1100 : 760, delay: entry.delay });
+      const hero = element.closest('.landing');
+      const duration = hero ? (entry.kind === 'waves' ? 900 : entry.kind === 'line' ? 650 : 420) : 760;
+      animate(element, frames, { duration, delay: entry.delay });
       if (entry.kind === 'heading') drawIcon(element, entry.delay);
       if (entry.ruled) rule(element, entry.delay + 80);
     }
@@ -78,12 +80,12 @@
         entries.set(element, { kind, delay: delay + (index % 4) * stagger, ruled });
       }
     }
-    register('.brand-lockup, .top-actions', 'nav', 100, 80);
-    register('.hero-content > .eyebrow', 'rise', 0, 180);
-    register('.hero-line-text', 'line', 130, 260);
-    register('.hero-copy', 'rise', 0, 460);
-    register('.hero-actions', 'rise', 0, 560);
-    register('.scope-strip > span', 'rise', 90, 650);
+    register('.brand-lockup, .top-actions', 'nav', 50, 40);
+    register('.hero-content > .eyebrow', 'rise', 0, 80);
+    register('.hero-line-text', 'line', 70, 100);
+    register('.hero-copy', 'rise', 0, 220);
+    register('.hero-actions', 'rise', 0, 280);
+    register('.scope-strip > span', 'rise', 50, 350);
     register('.hero-waves', 'waves');
     register('.section-title-row', 'heading');
     register('.section-header > p', 'rise', 0, 110);

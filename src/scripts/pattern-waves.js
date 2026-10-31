@@ -125,7 +125,7 @@ const WAVE_UNIT = 520;
 const RIPPLE_CELL = 8;
 const RIPPLE_RATE = 60;
 const PIXEL_BUDGET = 4.5e6;
-const INTRO_SECONDS = 2;
+const INTRO_SECONDS = 1;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -453,7 +453,7 @@ function mountPatternWaves(container) {
     spacing: 8,
     markSize: 0.85,
     depth: 0.8,
-    speed: 0.2,
+    speed: 0.35,
     direction: 20,
     opacity: 0.7,
     fade: 'edges',
