@@ -13,6 +13,7 @@ Themis provides four reusable prompts for working with ChatGPT: starting a case,
 - Copy individual prompts, with animated success feedback, reduced-motion support, and clipboard/manual-selection fallbacks.
 - Download a ZIP archive containing four separate Markdown prompt files.
 - Staged page entrances, drawn icons and rules, sliding tabs, smooth FAQ folds, and a reading-progress line. The hero background animates independently of the pointer.
+- Smooth wheel scrolling on the page and inside each prompt, with native touch/keyboard scrolling and a reduced-motion fallback. Mobile step labels sit above their headings.
 - Responsive layout, reduced-motion support, and readable content with JavaScript disabled.
 - Self-contained HTML for offline reading after building.
 - No application accounts, API keys, analytics, cookies, or case-data storage.
@@ -81,6 +82,8 @@ src/
   lib/prompt-archive.ts               Build-time ZIP archive generation
   scripts/pattern-waves.js            Adapted WebGL wave background
   scripts/page-motion.js              Entrance and interaction choreography
+  scripts/smooth-scroll.js            Page and prompt wheel smoothing
+  lib/smooth-scroll.ts                Build-time scrolling-script bundling
   styles/page-motion.css              Shared page-motion treatments
   lib/page-motion.ts                  Build-time motion-script bundling
   pages/index.astro                   Greek page
@@ -102,6 +105,7 @@ verify.cjs                            Bilingual interaction and ZIP verification
 verify-effects.cjs                    Animation lifecycle and fallback checks
 verify-copy.cjs                       Copy feedback and reduced-motion checks
 verify-motion.cjs                     Page motion and progressive-enhancement checks
+verify-scroll.cjs                     Wheel smoothing, nested scrolling, and mobile steps
 ```
 
 ## Checks
@@ -173,6 +177,6 @@ Model names, reasoning settings, tools, and availability can differ by account a
 
 The project’s original code and prompts use [WTFPL 2.0](LICENSE) — do whatever you want with them. Third-party material retains its original license.
 
-The GitHub mark is from Primer Octicons (MIT). The PatternWaves background is adapted from React Bits (MIT + Commons Clause) and uses OGL (Unlicense). See the [third-party notices](public/third-party-notices.txt).
+Smooth wheel scrolling uses [Lenis](https://github.com/darkroomengineering/lenis) (MIT), bundled locally without CDN requests. The GitHub mark is from Primer Octicons (MIT). The PatternWaves background is adapted from React Bits (MIT + Commons Clause) and uses OGL (Unlicense). See the [third-party notices](public/third-party-notices.txt).
 
 The header and footer link to the GitHub repository. The page makes no background requests to GitHub.
